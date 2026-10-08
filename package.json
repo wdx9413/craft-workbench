@@ -1,0 +1,20 @@
+{
+  "name": "craft-workbench",
+  "version": "0.12.39",
+  "private": true,
+  "type": "module",
+  "description": "Optional Craft web presentation and Tauri desktop shell",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "build:runtime": "pnpm --dir ../craft run build:core && pnpm --dir ../craft run build:common",
+    "start": "pnpm run build:runtime && node ../craft/dist/core/cli.js gui --workbench-dir ./workbench",
+    "serve": "pnpm run build:runtime && node ../craft/dist/core/cli.js serve --workbench-dir ./workbench",
+    "desktop:dev": "pnpm run build:runtime && pnpm --dir desktop run dev",
+    "desktop:build": "pnpm run build:runtime && pnpm --dir desktop run build",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:coverage": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=\"workbench/*.js\" --test-coverage-exclude=\"workbench/app.js\" tests/*.test.ts"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+desktop/src-tauri/target/
+desktop/src-tauri/resources/app/
+desktop/src-tauri/gen/schemas/
+.env
+.env.*
