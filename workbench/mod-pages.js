@@ -2,7 +2,7 @@
  * Mod 页与文件目录描述页：把 NEEDREAD P0 能力露到工作台 UI。
  */
 export function createModPages({ api, presentation, notify, fail, ask, operator, paint, go, openInlineOn }) {
-  const { icon, esc, head, emptyState, asideBlock, pill, shortTime } = presentation;
+  const { icon, esc, head, emptyState, asideBlock, pill, shortTime, countChip } = presentation;
   const operatorOf = typeof operator === 'function' ? operator : () => 'unattributed';
   const toast = notify;
 
@@ -361,6 +361,106 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
     });
   }
 
+  // The workspace whose relation health is currently shown. Kept module-local so
+  // a refresh keeps the selection instead of snapping back to the first project.
+  var relationsWorkspace = '';
+
+  function viewRelations() {
+    return api('/api/workspaces').then(function (result) {
+      var workspaces = (result && result.workspaces) || [];
+      if (!relationsWorkspace && workspaces.length) relationsWorkspace = String(workspaces[0].id);
+      if (relationsWorkspace && !workspaces.some(function (item) { return String(item.id) === relationsWorkspace; })) {
+        relationsWorkspace = workspaces.length ? String(workspaces[0].id) : '';
+      }
+      var picker = '<select id="rel-workspace" aria-label="选择工作区">' + (workspaces.length
+        ? workspaces.map(function (item) {
+          return '<option value="' + esc(item.id) + '"' + (String(item.id) === relationsWorkspace ? ' selected' : '') + '>' +
+            esc(item.name || item.root_path || item.id) + '</option>';
+        }).join('')
+        : '<option value="">还没有已登记工作区</option>') + '</select>';
+      if (!relationsWorkspace) {
+        return {
+          html: '<div class="stack"><div class="card">' + head('代码关系健康', '索引完成情况与关系解析缺口', '') +
+            '<div class="card-body">' + emptyState('还没有工作区', '先在灵策或观象里打开一个项目，索引建好后这里会显示关系健康。', 'folder') + '</div></div></div>',
+          aside: asideBlock('这里看什么', '', '<div class="aside-note">外部引用（标准库/依赖包）和内部关系缺口分开统计；只有内部缺口才值得修。</div>'),
+          mounts: []
+        };
+      }
+      return api('/api/workbench/codebase/status?workspace_id=' + encodeURIComponent(relationsWorkspace)).then(function (status) {
+        var indexes = (status && status.indexes) || [];
+        var latest = indexes[0];
+        var count = function (value) { return Number(value || 0).toLocaleString('zh-CN'); };
+        var relation = (latest && latest.relation_analysis) || {};
+        // Health is reported once for the newest index: the endpoint keeps its
+        // bounded per-row payload and puts the breakdown at the top level.
+        var diagnostics = (status && status.relation_diagnostics) || {};
+        var internal = Number(diagnostics.unresolved_relations || 0);
+        var external = Number(diagnostics.external_references || 0);
+        var breakdown = [
+          ['类型引用', diagnostics.unresolved_type_references],
+          ['继承/实现', diagnostics.unresolved_heritage],
+          ['导入', diagnostics.unresolved_imports],
+          ['调用', diagnostics.unresolved_calls],
+        ].map(function (pair) {
+          return '<div class="row"><span class="row-lead muted">' + icon('layers') + '</span><div class="row-main">' +
+            '<span class="row-title">' + esc(pair[0]) + '</span><span class="row-sub">' + count(pair[1]) + ' 条</span></div></div>';
+        }).join('');
+        var samples = (diagnostics.unresolved_call_samples || []).concat(diagnostics.unresolved_type_reference_samples || []);
+        var sampleCard = samples.length
+          ? '<div class="card">' + head('未解析样本', '最多 20 个名字，便于定位', '') + '<div class="card-body">' +
+            '<div class="rows">' + samples.map(function (name) {
+              return '<div class="row"><span class="row-lead muted">' + icon('search') + '</span><div class="row-main"><span class="row-title">' + esc(name) + '</span></div></div>';
+            }).join('') + '</div></div></div>'
+          : '';
+        var degraded = (diagnostics.degraded_languages || []);
+        var degradedCard = '<div class="card">' + head('未分析的语言', '这些语言的符号与关系不在索引里', countChip(degraded.length)) +
+          '<div class="card-body"><div class="rows">' + (degraded.length ? degraded.map(function (item) {
+            return '<div class="row"><span class="row-lead muted">' + icon('alert') + '</span><div class="row-main">' +
+              '<span class="row-title">' + esc(item.language) + '</span><span class="row-sub">' + esc(item.reason) +
+              (item.detail ? ' · ' + esc(item.detail) : '') + '</span></div></div>';
+          }).join('') : '<p class="aside-note">所有纳入索引的语言都已分析。</p>') + '</div></div></div>';
+        var summaryRows = !latest
+          ? emptyState('还没有索引', '先让领航/灵策在这个工作区跑一次任务，或调用代码库索引构建。', 'db')
+          : '<div class="row"><span class="row-lead accent">' + icon('db') + '</span><div class="row-main">' +
+              '<span class="row-title">' + esc(latest.analyzer || 'unknown') + ' · v' + esc(latest.analyzer_version || '—') + '</span>' +
+              '<span class="row-sub">节点 ' + count(latest.node_count) + ' · 关系 ' + count(latest.edge_count) +
+              ' · ' + esc(latest.graph_storage || 'inline') + ' · ' + esc(shortTime(latest.created_at)) + '</span></div>' +
+              pill(relation.status === 'analyzed' ? '完整' : relation.status === 'partial' ? '部分' : '未分析',
+                relation.status === 'analyzed' ? 'ok' : relation.status === 'partial' ? 'warn' : '') + '</div>' +
+            '<div class="row"><span class="row-lead muted">' + icon('search') + '</span><div class="row-main">' +
+              '<span class="row-title">内部缺口 ' + count(internal) + ' · 外部引用 ' + count(external) + '</span>' +
+              '<span class="row-sub">外部引用是标准库/依赖包，不是缺陷；内部缺口才是真正丢失的关系。</span></div>' +
+              pill(internal === 0 ? '无内部缺口' : '待收敛 ' + count(internal), internal === 0 ? 'ok' : 'warn') + '</div>' +
+            '<div class="row"><span class="row-lead muted">' + icon('cpu') + '</span><div class="row-main">' +
+              '<span class="row-title">本地类型参数 ' + count(diagnostics.local_type_parameters) +
+              ' · 运行时调用 ' + count(diagnostics.computed_invocations) + ' · 立即调用 ' + count(diagnostics.inline_invocations) + '</span>' +
+              '<span class="row-sub">这些是确定无法静态连边的类别，已从内部缺口里剔除。</span></div></div>';
+        var reasons = (relation.partial_reasons || []);
+        var reasonCard = reasons.length
+          ? '<div class="card">' + head('为什么是部分', '分析器报告的完整性原因', countChip(reasons.length)) + '<div class="card-body"><div class="rows">' +
+            reasons.map(function (reason) {
+              return '<div class="row"><span class="row-lead muted">' + icon('alert') + '</span><div class="row-main"><span class="row-title">' + esc(reason) + '</span></div></div>';
+            }).join('') + '</div></div></div>'
+          : '';
+        return {
+          html: '<div class="stack"><div class="card">' + head('代码关系健康', '索引完成情况与关系解析缺口；外部引用与内部缺口分开统计', picker) +
+            '<div class="card-body"><div class="rows">' + summaryRows + '</div></div></div>' +
+            '<div class="grid-2"><div class="card">' + head('内部缺口构成', '只有这些会真正影响调用链与影响面', countChip(internal)) +
+            '<div class="card-body"><div class="rows">' + (internal > 0 ? breakdown : '<p class="aside-note">没有内部关系缺口。</p>') + '</div></div></div>' +
+            degradedCard + '</div>' + reasonCard + sampleCard + '</div>',
+          aside: asideBlock('怎么读', '', '<div class="aside-note">本页只读：数据来自最近一次代码索引。外部引用（Promise、node:fs、数组方法等）在 checkpoint 分析里本来就加载不到，不代表索引坏了。内部缺口为 0 时，调用链与影响面是完整的。</div>'),
+          mounts: [function (root) {
+            var select = root.querySelector('#rel-workspace');
+            if (select) select.onchange = function () {
+              relationsWorkspace = String(select.value || '');
+              paint('relations');
+            };
+          }]
+        };
+      });
+    });
+  }
+
   return { mods: viewMods, filedir: viewFileDirDesc, onboard: viewOnboarding, modeConfirm: viewModeConfirm,
-    evolution: viewEvolution, blocked: viewBlockedQueue };
+    evolution: viewEvolution, blocked: viewBlockedQueue, relations: viewRelations };
 }

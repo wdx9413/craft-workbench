@@ -10,6 +10,7 @@ const presentation = {
   asideBlock: (_t: string, _r: string, body: string) => body,
   pill: (text: string, tone: string) => `<span class="${tone}">${text}</span>`,
   shortTime: (value: unknown) => String(value ?? ''),
+  countChip: (value: unknown) => `<span class="count">${String(value)}</span>`,
 };
 
 function button(attrs: Record<string, string>) {
@@ -213,4 +214,61 @@ test('blocked queue lists suspended routes and resumes a session', async () => {
   (resume as { onclick?: () => void }).onclick!();
   await flush();
   assert.ok(calls.some((c) => c.path.includes('/api/workbench/pilot/resume-session?session_id=s1')));
+});
+
+test('relation health separates internal gaps from external references and keeps the workspace choice', async () => {
+  const calls: Array<{ path: string }> = [];
+  const refreshes: string[] = [];
+  const status = {
+    workspace_id: 'ws-1', enabled: true, readiness: 'ready',
+    indexes: [{
+      id: 'idx-1', analyzer: 'multi-language-static', analyzer_version: 'ts9+py1', created_at: '2026-11-06T00:00:00.000Z',
+      node_count: 74089, edge_count: 311056, graph_storage: 'project-sharded-v5',
+      relation_analysis: { status: 'partial', partial_reasons: ['degraded_languages', 'unresolved_calls'] },
+    }],
+    // Health is top-level for the newest index, not repeated on every row.
+    relation_diagnostics: {
+        unresolved_relations: 218, unresolved_type_references: 0, unresolved_heritage: 0,
+        unresolved_imports: 0, unresolved_calls: 218, external_references: 124863,
+        local_type_parameters: 112, computed_invocations: 128, inline_invocations: 47,
+        unresolved_call_samples: ['run'], unresolved_type_reference_samples: [],
+        degraded_languages: [{ language: 'yaml', reason: 'unsupported_lsp_language' }],
+    },
+  };
+  const pages = createModPages({
+    api: async (path: string) => {
+      calls.push({ path });
+      if (path === '/api/workspaces') return { workspaces: [{ id: 'ws-1', name: 'craft' }, { id: 'ws-2', name: 'other' }] };
+      if (path.startsWith('/api/workbench/codebase/status')) return status;
+      return {};
+    },
+    presentation, notify: () => {}, fail: (e: Error) => { throw e; }, ask: () => null, operator: () => 'op',
+    paint: (page: string) => refreshes.push(page), go: () => {}, openInlineOn: () => {},
+  });
+  const view = await pages.relations();
+  // Both facts are shown side by side: the big external number must not read as a defect.
+  assert.match(view.html, /内部缺口 218/u);
+  assert.match(view.html, /外部引用 124,863/u);
+  assert.match(view.html, /待收敛 218/u);
+  assert.match(view.html, /degraded_languages/u);
+  assert.match(view.html, /yaml/u);
+  assert.match(view.html, /unsupported_lsp_language/u);
+  assert.match(view.html, /id="rel-workspace"/u);
+  assert.equal(calls.some((c) => c.path === '/api/workbench/codebase/status?workspace_id=ws-1'), true);
+  // Switching workspaces repaints instead of re-rendering stale numbers.
+  const select = { value: 'ws-2', onchange: undefined as unknown as () => void };
+  view.mounts[0]({ querySelector: (s: string) => (s === '#rel-workspace' ? select : null) } as never);
+  select.onchange!();
+  assert.deepEqual(refreshes, ['relations']);
+});
+
+test('relation health explains itself when no workspace has been indexed yet', async () => {
+  const pages = createModPages({
+    api: async () => ({ workspaces: [] }),
+    presentation, notify: () => {}, fail: (e: Error) => { throw e; }, ask: () => null, operator: () => 'op',
+    paint: () => {}, go: () => {}, openInlineOn: () => {},
+  });
+  const view = await pages.relations();
+  assert.match(view.html, /还没有工作区/u);
+  assert.deepEqual(view.mounts, []);
 });

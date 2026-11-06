@@ -16,7 +16,7 @@ export const MODES = {
   workshop: {
     key: 'workshop', label: '灵策', title: '灵策', icon: 'terminal', tagline: '按项目工作',
     sub: '按项目与对话工作；插件、技能、连接器和上下文都在这里进入',
-    nav: ['home', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'filedir', 'onboard', 'mode-confirm', 'settings'], home: 'home'
+    nav: ['home', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'filedir', 'relations', 'onboard', 'mode-confirm', 'settings'], home: 'home'
   },
   control: {
     key: 'control', label: '观象', title: '观象', icon: 'layers', tagline: '看见全局',
