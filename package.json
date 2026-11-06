@@ -1,6 +1,6 @@
 {
   "name": "craft-workbench",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "private": true,
   "type": "module",
   "description": "Optional Craft web presentation and Tauri desktop shell",
@@ -19,6 +19,6 @@
     "test:coverage:context-audit": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/context-audit-panel.js tests/context-audit-panel.test.ts"
   },
   "dependencies": {
-    "craft": "0.15.0"
+    "craft": "0.16.0"
   }
 }
