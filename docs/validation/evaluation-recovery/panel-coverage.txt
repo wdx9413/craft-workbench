@@ -1,0 +1,27 @@
+(node:45344) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ evaluation panel validates, submits once, follows progress and renders the final report (4.565417ms)
+✔ evaluation comparison selects distinct completed runs, prevents duplicate requests and safely shows evidence (1.268208ms)
+✔ evaluation recovery preserves uncertainty, restores paths and releases only a confirmed missing run (1.223084ms)
+✔ evaluation path picking and storage failures do not duplicate submissions (1.0645ms)
+✔ unmounting while preparing submission prevents a real dispatch (0.334209ms)
+✔ unknown recovery retains the original record and requires review before a separate submission (0.87425ms)
+✔ unknown history validates and bounds optional local storage without changing server records (0.405084ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.539417
+ℹ start of coverage report
+ℹ ---------------------------------------------------------------------
+ℹ file                 | line % | branch % | funcs % | uncovered lines
+ℹ ---------------------------------------------------------------------
+ℹ workbench            |        |          |         | 
+ℹ  evaluation-panel.js | 100.00 |   100.00 |  100.00 | 
+ℹ ---------------------------------------------------------------------
+ℹ all files            | 100.00 |   100.00 |  100.00 | 
+ℹ ---------------------------------------------------------------------
+ℹ end of coverage report

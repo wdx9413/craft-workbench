@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-30T18:25:50.127516+00:00",
+  "scope": "Isolated Ego browser with source Craft server, current Workbench assets and compiled installed Eval 0.1.5; native Codex transport simulated, real model services disabled. Installed Runtime HTTP and asset consumption tested separately by Workbench tests.",
+  "browser_space": 7,
+  "tests": {
+    "workbench": {
+      "passed": 57,
+      "failed": 0
+    },
+    "panel": {
+      "passed": 7,
+      "line_percent": 100,
+      "branch_percent": 100,
+      "function_percent": 100,
+      "included_in_workbench_total": true
+    }
+  },
+  "observations": {
+    "comparison": {
+      "comparison": "有效配对 1 / 1 · 候选胜 1 · 基准胜 0 · 平局 0",
+      "report": "查看统计与护栏{\n  \"status\": \"comparable\",\n  \"subject_kind\": \"software\",\n  \"baseline_run_id\": \"dcd7278eb056427c8bb0104efca76a87\",\n  \"candidate_run_id\": \"7c32e14a45b54073a216a08f3617d373\",\n  \"expected_pairs\": 1,\n  \"measured_pairs\": 1,\n  \"unmeasured_pairs\": 0,\n  \"candidate_wins\": 1,\n  \"baseline_wins\": 0,\n  \"ties\": 0,\n  \"one_sided_p\": 0.5,\n  \"candidate_trigger_failures\": 0,\n  \"candidate_safety_failures\": 0,\n  \"independent_task_runs\": true,\n  \"gateway_observed_triggers\": true,\n  \"unobserved_triggers\": 0,\n  \"skill_gain_supported\": false,\n  \"primary_metric\": \"binary_pass_rate\",\n  \"primary_effect\": {\n    \"pairs\": 1,\n    \"candidate_wins\": 1,\n    \"baseline_wins\": 0,\n    \"ties\": 0,\n    \"risk_difference\": 1,\n    \"risk_difference_ci95\": null,\n    \"odds_ratio\": null,\n    \"phi\": null,\n    \"sign_test_p\": 0.5\n  },\n  \"guardrails\": [],\n  \"duration_ms\": {\n    \"baseline\": {\n      \"observed\": 1,\n      \"mean\": 52,\n      \"median\": 52,\n      \"p95\": 52,\n      \"variance\": null,\n      \"standard_deviation\": null\n    },\n    \"candidate\": {\n      \"observed\": 1,\n      \"mean\": 58,\n      \"median\": 58,\n      \"p95\": 58,\n      \"variance\": null,\n      \"standard_deviation\": null\n    }\n  },\n  \"cost_units\": {\n    \"baseline\": {\n      \"observed\": 0,\n      \"mean\": null,\n      \"median\": null,\n      \"p95\": null,\n      \"variance\": null,\n      \"standard_deviation\": null\n    },\n    \"candidate\": {\n      \"observed\": 0,\n      \"mean\": null,\n      \"median\": null,\n      \"p95\": null,\n      \"variance\": null,\n      \"standard_deviation\": null\n    }\n  },\n  \"duration_effect\": {\n    \"pairs\": 1,\n    \"mean_difference\": 6,\n    \"median_difference\": 6,\n    \"standardized_difference\": null,\n    \"bootstrap_mean_difference_ci95\": null\n  },\n  \"cost_effect\": {\n    \"pairs\": 0,\n    \"mean_difference\": null,\n    \"median_difference\": null,\n    \"standardized_difference\": null,\n    \"bootstrap_mean_difference_ci95\": null\n  }\n}",
+      "overflow": false
+    },
+    "mismatch": {
+      "mismatch": "无法比较：两次运行的评测集、运行配置、试验次数或被测类型不同。请选择条件一致的运行。",
+      "ids": [
+        "2cc90bbc346fc1833136a94046b259584ee785680c7bcaf330a3bad99e0b53c6",
+        "eaee3afbaafd5d771c5317b0ed0a30099d54e59d9b9b30112dbee678b813925b",
+        "fad15f5822b553c14d7afb7d6e9bc45110204dd8f2cb3fdd37281e7342187d51"
+      ],
+      "currentId": "fad15f5822b553c14d7afb7d6e9bc45110204dd8f2cb3fdd37281e7342187d51"
+    },
+    "restored": {
+      "id": "fad15f5822b553c14d7afb7d6e9bc45110204dd8f2cb3fdd37281e7342187d51",
+      "status": "已生成报告",
+      "workspace": "/private/var/folders/d4/gddpyrsn1nsgv8f711vhf9hr0000ks/T/craft-compare-browser-gcXrkF/candidate",
+      "history": 3
+    },
+    "narrow": {
+      "width": 760,
+      "height": 850,
+      "overflow": false,
+      "controls": [
+        {
+          "text": "开始评测",
+          "x": 274,
+          "right": 356
+        },
+        {
+          "text": "取消评测",
+          "x": 364,
+          "right": 446
+        },
+        {
+          "text": "核对运行",
+          "x": 454,
+          "right": 536
+        },
+        {
+          "text": "新评测",
+          "x": 544,
+          "right": 612
+        }
+      ]
+    },
+    "crash": {
+      "worker": 42339,
+      "owned": {
+        "adapter": 42346,
+        "guardian": 42341,
+        "descendant": 42350
+      },
+      "direct_parent_verified": 38852,
+      "adapter_stopped": true,
+      "descendant_stopped": true,
+      "starts": "x"
+    },
+    "unknown": {
+      "id": "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f",
+      "status": "结果未知，需核对：Evaluation worker exited without a terminal result; inspect the saved run before retrying",
+      "startDisabled": true,
+      "cancelDisabled": true,
+      "newDisabled": true,
+      "prepareDisabled": true,
+      "overflow": false
+    },
+    "resumed": {
+      "before": {
+        "checked": true,
+        "prepareEnabled": true,
+        "cancelDisabled": true
+      },
+      "draft": {
+        "id": null,
+        "history": [
+          "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f"
+        ],
+        "startEnabled": true,
+        "status": "原运行结果保持未知，记录已保留。新提交会创建独立运行。"
+      },
+      "after": {
+        "id": "d44e7d5d39ec9156ee48238958f71773d2ec0619be974e9feed5231fe3de4e44",
+        "status": "已生成报告",
+        "report": "通过 1 · 失败 0 · 未判定 0 · 缺失 0 · 无效 0sample-check",
+        "history": [
+          "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f"
+        ]
+      }
+    },
+    "revisited": {
+      "width": 760,
+      "overflow": false,
+      "id": "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f",
+      "unknown": "结果未知，需核对：Evaluation worker exited without a terminal result; inspect the saved run before retrying",
+      "checked": false,
+      "prepareDisabled": true,
+      "history": [
+        "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f"
+      ]
+    },
+    "disconnected": {
+      "status": "读取未确认，请核对运行：Failed to fetch",
+      "checked": false,
+      "recoveryHidden": true,
+      "prepareDisabled": true,
+      "startDisabled": true
+    },
+    "server_records": {
+      "original": {
+        "id": "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f",
+        "state": "unknown",
+        "error": "Evaluation worker exited without a terminal result; inspect the saved run before retrying"
+      },
+      "new_run": {
+        "id": "d44e7d5d39ec9156ee48238958f71773d2ec0619be974e9feed5231fe3de4e44",
+        "state": "completed",
+        "evaluator_version": "0.1.5"
+      },
+      "original_starts": "x"
+    },
+    "reloaded": {
+      "id": "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f",
+      "history": [
+        "e51ca8289dfe0ff9029fb1e2024973d8eea31043bce2696600684c0c363f469f"
+      ],
+      "unknown": "结果未知，需核对：Evaluation worker exited without a terminal result; inspect the saved run before retrying",
+      "confirmed": false,
+      "blocked": true
+    }
+  },
+  "sources_sha256": {
+    "craft-workbench/workbench/evaluation-panel.js": "453a52bfe7e07526719d7e0d597f2f3c787cbd19ec8f4c77dc006f46f7f3cd08",
+    "craft-workbench/workbench/app.css": "4f4e4e3b5491173527e2f1e247f10fb1f9e5f87235da3abd3f087a8dc4bd6d09",
+    "craft-workbench/tests/evaluation-panel.test.ts": "c6d667b898408eaad62448a0d854ba1ea080a000931ea5df7e4eab09f2c683d4",
+    "craft-workbench/UX-CONTRACT.md": "7690c8814d5b20385e5167589750ac22e3c3bf37390e0e76e8ba933c1c8c3799",
+    "craft-workbench/vendor/craft-0.12.131.tgz": "bc78cd10ff2de89288637ace87e20e4acb4133667d756efcfb725b95a399ef70",
+    "craft/vendor/craft-eval-0.1.5.tgz": "6540f11a503bf58cba428dbb76a3d3348cda171b8787b1f8ec7d6ac5fd3d5c8e"
+  },
+  "artifacts_sha256": {
+    "desktop.png": "25afdb02ac443462cd550e1338a7e66e54714e2e4e05c6d8758f0df5d9384e00",
+    "narrow.png": "8aa38cd05092993e383e09420701558aaf5627a1572d351516d5d2d68025b4c1",
+    "workbench-tests.txt": "94e1123c0d73f30a0448d12c2ad7b18e0de16694e245d2e0e574f2e2927f3ab5",
+    "unknown-narrow.png": "dda7ddafd8e3d989bbf597d0e1caf2825810332ac3be6c6bfb92e2eadfa8465e",
+    "unknown.png": "7576d5fecd20349a9a335963a7a177649ef243d82ff24b42db5ca9163c44c14f",
+    "panel-coverage.txt": "4ed44d36a9390630917baa42de46349c89892fec0e647c29c34fb2b49e171fff",
+    "layering-check.txt": "f9ac4aed9d812632a809ae132716eaa47ea9202a66a480f29471f856db074d4c",
+    "docs-check.txt": "3a70ef63f902ef8608ef996881c6badea81227e6dacb0c594fdc6f62a9c041dd",
+    "fixture-source.mjs.txt": "6a05c605de2f2fead5da79901f0470698d85b89990a0df2c33bcb5e599978995"
+  },
+  "limitations": [
+    "Manual acknowledgement records user intent only; the UI never claims it proved an unknown process stopped.",
+    "Recovery navigates to a new draft, preserves unknown server state and never cancels, kills or resends the original operation.",
+    "Recently observed unknown history is an optional 20-ID local cache, not a complete server-side history or execution authority.",
+    "Browser has no native picker; native transport is simulated. This is not real Codex/Claude dialogue or Tauri window acceptance.",
+    "macOS-only worker crash evidence; guardian SIGKILL, deliberate daemonization, Windows/Linux and full-goal coverage remain separate.",
+    "No commit, push, publication or installed-plugin upgrade. Isolated temporary runtime data will be removed after receipt capture."
+  ],
+  "native_ui_check": {
+    "available": false,
+    "error": "Native apps: Error: Sky Computer Use service startup request failed",
+    "browser_inventory_available": true,
+    "other_tabs_not_operated": true
+  },
+  "checks": {
+    "branches": [
+      "craft main",
+      "craft-eval main",
+      "craft-workbench main"
+    ],
+    "diff_check": "passed",
+    "layering": "passed",
+    "docs": "passed"
+  },
+  "screenshots": {
+    "desktop.png": "Completed report and comparison controls before the recovery UI edit",
+    "narrow.png": "Completed form at 760px before the recovery UI edit",
+    "unknown.png": "Current recovery region after an owned real worker crash",
+    "unknown-narrow.png": "Current recovery region and history selector at 760px; inspected visually"
+  },
+  "cleanup": {
+    "browser_space_7_finished": true,
+    "owned_preview_stopped": true,
+    "isolated_data_removed": true,
+    "verified_at": "2026-10-30T18:27:08.549491+00:00"
+  }
+}

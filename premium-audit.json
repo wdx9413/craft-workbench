@@ -1,0 +1,509 @@
+{
+  "findings": [
+    {
+      "category": "unresolved",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/app.js",
+      "line": 2254,
+      "message": "Native select is used without an explicit ownership decision.",
+      "remediation": "Record Select/Listbox as native or reuse the authored canonical owner.",
+      "ruleId": "ownership.native-select-undecided",
+      "severity": "error"
+    },
+    {
+      "category": "unresolved",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/app.js",
+      "line": 2254,
+      "message": "Native select is used without an explicit ownership decision.",
+      "remediation": "Record Select/Listbox as native or reuse the authored canonical owner.",
+      "ruleId": "ownership.native-select-undecided",
+      "severity": "error"
+    },
+    {
+      "category": "unresolved",
+      "file": "workbench/app.js",
+      "line": 2255,
+      "message": "Native select is used without an explicit ownership decision.",
+      "remediation": "Record Select/Listbox as native or reuse the authored canonical owner.",
+      "ruleId": "ownership.native-select-undecided",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/app.js",
+      "line": 2259,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/app.js",
+      "line": 2452,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/app.js",
+      "line": 2453,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 16,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 19,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 22,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 27,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 28,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 29,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 30,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 37,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 59,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 71,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 74,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 80,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/index.html",
+      "line": 109,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/app.js",
+      "line": 2259,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/app.js",
+      "line": 2452,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/app.js",
+      "line": 2453,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 16,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 19,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 22,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 27,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 28,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 29,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 30,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 37,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 59,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 71,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 74,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 80,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/index.html",
+      "line": 109,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/app.js",
+      "line": 2260,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/app.js",
+      "line": 2453,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/app.js",
+      "line": 2454,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/evaluation-panel.js",
+      "line": 13,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 16,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 19,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 22,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 27,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 28,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 29,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 30,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 37,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 59,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 71,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 74,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 80,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/index.html",
+      "line": 109,
+      "message": "Enabled literal button has no detectable action or submit behavior.",
+      "remediation": "Connect the button to a real action, make it a submit button, or disable/remove it.",
+      "ruleId": "affordance.actionless-button",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0382dea8f5974c8a9213e4bd9b80e0dc/workbench/app.js",
+      "line": 2253,
+      "message": "Literal product textarea does not show evidence of the canonical resize-none rule.",
+      "remediation": "Use the shared Textarea owner or apply resize-none/resize: none with adequate height or auto-grow behavior.",
+      "ruleId": "form.textarea-resize-missing",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": ".craft_data/codebase/snapshots/repository_749e2bf5fba1d651d16466a5/workspace_checkpoint_0e6750dd02bb45d9872832f1d23b24e9/workbench/app.js",
+      "line": 2253,
+      "message": "Literal product textarea does not show evidence of the canonical resize-none rule.",
+      "remediation": "Use the shared Textarea owner or apply resize-none/resize: none with adequate height or auto-grow behavior.",
+      "ruleId": "form.textarea-resize-missing",
+      "severity": "error"
+    },
+    {
+      "category": "violation",
+      "file": "workbench/app.js",
+      "line": 2254,
+      "message": "Literal product textarea does not show evidence of the canonical resize-none rule.",
+      "remediation": "Use the shared Textarea owner or apply resize-none/resize: none with adequate height or auto-grow behavior.",
+      "ruleId": "form.textarea-resize-missing",
+      "severity": "error"
+    }
+  ],
+  "mode": "strict",
+  "projectRoot": "/Users/didi/Documents/work/my-craft/craft-workbench",
+  "schemaVersion": 1,
+  "summary": {
+    "errors": 55,
+    "total": 55,
+    "unresolved": 3,
+    "violations": 52,
+    "warnings": 0
+  }
+}

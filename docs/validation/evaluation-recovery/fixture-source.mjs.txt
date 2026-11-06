@@ -1,0 +1,58 @@
+import { createServer } from 'node:http';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { CraftStore } from '/Users/didi/Documents/work/my-craft/craft/core/infrastructure/store.ts';
+import { craftPaths } from '/Users/didi/Documents/work/my-craft/craft/core/infrastructure/paths.ts';
+import { CraftService } from '/Users/didi/Documents/work/my-craft/craft/core/application/craft-service.ts';
+import { WorkbenchWebApp } from '/Users/didi/Documents/work/my-craft/craft/core/interfaces/workbench-server.ts';
+import { CodexWorkbenchSessions } from '/Users/didi/Documents/work/my-craft/craft/core/interfaces/codex-workbench-sessions.ts';
+import { WorkbenchMessageQueue } from '/Users/didi/Documents/work/my-craft/craft/core/interfaces/workbench-message-queue.ts';
+import { WorkbenchEvaluations } from '/Users/didi/Documents/work/my-craft/craft/core/interfaces/workbench-evaluations.ts';
+import { ClaudeWorkbenchRuns } from '/Users/didi/Documents/work/my-craft/craft/core/interfaces/claude-workbench-runs.ts';
+import { ClaudeWorkbenchAdapter } from '/Users/didi/Documents/work/my-craft/craft/core/interfaces/claude-workbench-adapter.ts';
+
+const root = await mkdtemp(join(tmpdir(), 'craft-compare-browser-'));
+const store = await new CraftStore(craftPaths(join(root, 'data'))).open();
+store.create('task', 'queue-preview', { title: '[隔离测试] 队列恢复', status: 'active', mode: 'conversation' });
+let starts = 0;
+const sessions = new CodexWorkbenchSessions(store, emit => ({
+  initialize: async () => ({}), close() { emit({ type: 'closed', error: 'fixture closed' }); }, respond() {},
+  async request(method, params) {
+    if (method === 'model/list') return { data: [{ model: 'simulation-model', displayName: '模拟回复', isDefault: false }], nextCursor: null };
+    if (method === 'thread/start' || method === 'thread/resume') return { thread: { id: 'browser-native', ephemeral: false }, cwd: root, model: 'simulation-model', sandbox: { type: params.sandbox === 'workspace-write' ? 'workspaceWrite' : 'readOnly' }, approvalPolicy: params.approvalPolicy, approvalsReviewer: params.approvalsReviewer };
+    if (method === 'thread/read') return { thread: { id: 'browser-native', cwd: root, model: 'simulation-model', turns: [{ items: [{ type: 'agentMessage', text: '这是隔离测试的原生历史（模拟），不会调用真实模型。' }] }] } };
+    if (method === 'turn/start') {
+      const id = `fixture-turn-${++starts}`;
+      setTimeout(() => emit({ type: 'notification', method: 'turn/completed', params: { threadId: 'browser-native', turn: { id, status: 'completed' } } }), 40);
+      return { turn: { id } };
+    }
+    if (method === 'account/rateLimits/read') return { rateLimits: null };
+    return {};
+  },
+}));
+const evaluations = new WorkbenchEvaluations(store);
+const suite = join(root, 'suite.json'), subject = join(root, 'subject.json'), runtime = join(root, 'runtime.json'), changedRuntime = join(root, 'changed-runtime.json');
+const baseline = join(root, 'baseline'), candidate = join(root, 'candidate');
+await mkdir(baseline); await mkdir(candidate);
+await writeFile(join(baseline, 'status.txt'), '1'); await writeFile(join(candidate, 'status.txt'), '0');
+await writeFile(suite, JSON.stringify({ schema: 'craft-eval.eval.v1', suite_id: 'browser-acceptance', subject_kind: 'software', partition: 'development', sanitized: true, cases: [{ id: 'sample-check', argv: [process.execPath, '-e', "process.exitCode=Number(require('node:fs').readFileSync('status.txt','utf8'))"], checks: [{ id: 'exit', kind: 'exit_code', equals: 0 }] }] }));
+await writeFile(subject, JSON.stringify({kind:'software', id:'browser-fixture', version:'test'}));
+const values = Object.fromEntries(['environment_digest', 'budget_digest', 'host_digest', 'model_digest', 'tools_digest'].map(key => [key, 'isolated-software-fixture']));
+await writeFile(runtime, JSON.stringify(values)); await writeFile(changedRuntime, JSON.stringify({...values, environment_digest:'different-environment'}));
+const token = randomUUID(); let origin;
+const service = new CraftService(store);
+const claudeRuns = new ClaudeWorkbenchRuns(store, new ClaudeWorkbenchAdapter(() => { throw new Error('real Claude execution is disabled in this fixture'); }));
+const app = () => new WorkbenchWebApp(service, token, origin, { workbenchDir: '/Users/didi/Documents/work/my-craft/craft-workbench/workbench', agentSessions: sessions, claudeRuns, evaluations });
+const server = createServer(async (request, response) => {
+  const chunks = []; for await (const chunk of request) chunks.push(chunk);
+  const result = await app().handleAsync({ method: request.method, path: request.url, token: request.headers.authorization?.replace(/^Bearer /, ''), origin: request.headers.origin, body: Buffer.concat(chunks).toString('utf8') });
+  response.writeHead(result.status, { 'content-type': result.contentType }); response.end(result.body);
+});
+await new Promise(resolve => server.listen(0, 'localhost', resolve));
+origin = `http://localhost:${server.address().port}`;
+await writeFile('/tmp/craft-compare-browser-fixture.json', JSON.stringify({ url: `${origin}/workbench#token=${token}`, root, pid: process.pid, suite, subject, runtime, changedRuntime, baseline, candidate }));
+console.log('Isolated evaluation preview ready; connection details kept in the local fixture file.');
+await new Promise(resolve => { process.once('SIGTERM', resolve); process.once('SIGINT', resolve); });
+await new Promise(resolve => server.close(resolve)); await evaluations.close(); sessions.close(); claudeRuns.close(); store.close(); await rm(root, { recursive: true, force: true });

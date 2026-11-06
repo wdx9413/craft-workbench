@@ -1,0 +1,102 @@
+$ node --experimental-strip-types --test tests/*.test.ts
+(node:44002) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native histories render messages and retain unfamiliar content (0.776542ms)
+✔ native tool events show commands and results without repeating assistant text (0.248167ms)
+✔ live output follows the bottom, preserves manual scroll and limits retained text (1.364375ms)
+✔ native workspace creates, connects, renders output and never retries an uncertain submission (39.348792ms)
+✔ first send creates the task and native session once, with the chosen project and full access (1.957917ms)
+(node:44003) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ version page requires a reviewed diff, preserves restoration idempotency and escapes content (1.984291ms)
+✔ scope and comparison changes suppress late read/write completions and failures (1.52425ms)
+(node:44004) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ composer sizing preserves CSS constraints and handles both box models (0.752333ms)
+✔ Enter uses the existing send action exactly once and preserves newline/modifier keys (0.158ms)
+✔ IME composition and legacy 229 never submit; subsequent Enter can send (0.09425ms)
+(node:44005) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ retiring uses current scoped version, refreshes on success and preserves failures (1.957708ms)
+✔ usage renders escaped evidence, uncertainty, empty and legacy states and rejects stale reads (0.28025ms)
+✔ interview opens existing drafts, saves exact versions, handles conflicts and suppresses stale responses (0.751541ms)
+(node:44006) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a stalled transport times out without claiming remote cancellation (0.644959ms)
+✔ three views retain one task, explicit materials and edits without granting effects (1.610375ms)
+✔ material preflight is atomic and rejects binary, unsupported, oversized and aggregate data (0.937083ms)
+✔ validation happens before dispatch; refresh handles missing models and empty home (0.570041ms)
+✔ opening an existing task does not discard an unsent entry draft (0.118375ms)
+✔ unknown submissions remain task-bound across reads, mode changes and task switches (0.655583ms)
+✔ malformed replies and unknown creation cannot be retried by returning to the pending draft (2.687667ms)
+✔ stale detail cannot overwrite a newer selection; malformed and missing history handled (0.17125ms)
+✔ all entry views escape material/model content and retain honest empty/error/pending states (0.583292ms)
+(node:44007) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ entry DOM adapter wires modes, task continuation, explicit context and retained edits (15.314291ms)
+✔ IME-safe shortcuts, failure states, resize failure and unload warning are honest (5.154667ms)
+(node:44008) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ evaluation panel validates, submits once, follows progress and renders the final report (4.622291ms)
+✔ evaluation comparison selects distinct completed runs, prevents duplicate requests and safely shows evidence (1.570458ms)
+✔ evaluation recovery preserves uncertainty, restores paths and releases only a confirmed missing run (0.80175ms)
+✔ evaluation path picking and storage failures do not duplicate submissions (2.917958ms)
+✔ unmounting while preparing submission prevents a real dispatch (0.319709ms)
+✔ unknown recovery retains the original record and requires review before a separate submission (0.804334ms)
+✔ unknown history validates and bounds optional local storage without changing server records (0.403167ms)
+(node:44010) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ desktop opens a fresh conversation and restores a selected native session (2.58625ms)
+✔ imports one native session from the new-session view (1.972292ms)
+(node:44011) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ recovery waits for acknowledgement and prevents duplicate requests while retaining accessible state (2.480917ms)
+✔ unknown input requires explicit inline discard and initially focuses retaining the message (0.236459ms)
+✔ unsettled native turns cannot be discarded and Escape safely retains the input (0.111958ms)
+✔ network, conflict and view-refresh errors preserve recovery controls without automatic retries (0.220208ms)
+✔ session switches discard stale success and failure responses, and another row edit blocks recovery (2.419583ms)
+(node:44012) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ installed runtime resolves without a sibling checkout and prepares the public sidecar (76.552459ms)
+✔ the installed runtime declares fixed mandatory peers for its Claude SDK (6.965334ms)
+(node:44012) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+✔ the installed public runtime inventories legacy project data without changing it (423.241ms)
+✔ the installed CLI serves recovery assets, reconciles an input and executes its pinned evaluator over HTTP (667.716917ms)
+✔ the installed runtime imports pinned legacy assets as candidates and restores data before registration (127.839458ms)
+(node:44013) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Tauri desktop keeps the Workbench sidecar and untrusted embedded pages in separate capability scopes (36.041ms)
+(node:44014) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44014) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+✔ Craft Workbench serves the explicitly mounted presentation project (31.706542ms)
+(node:44015) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ render seam suppresses obsolete results and obsolete errors across same-page selections (2.432666ms)
+(node:44016) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ first-run defaults, metadata-only drafts, navigation and provider selection are owned by the setup Module (1.540792ms)
+✔ editing preserves public provider metadata and cannot retain nested credentials (0.140542ms)
+✔ invalid transitions and unsafe endpoints never reach the persistence Interface (0.417916ms)
+✔ single-flight saves isolate late success and failure from another opened wizard (0.666625ms)
+✔ editing the same wizard during persistence invalidates its old UI result without issuing a second write (0.146458ms)
+(node:44017) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ folder union retains opaque identities, duplicate records, orphan tasks and default tasks (0.741959ms)
+✔ project page pins one selection and queries a known encoded detail only (0.454ms)
+✔ slow folder detail remains tied to its original selection while another load completes (0.111792ms)
+(node:44019) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Memory and Workflow pages render persisted rows and wire governed edit/retire actions (2.659041ms)
+(node:44020) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ browser transport preserves token, body, methods and bounded response errors (15.743917ms)
+✔ bundled Desktop uses the native bridge without exposing runtime token to JavaScript (0.251666ms)
+ℹ tests 57
+ℹ suites 0
+ℹ pass 57
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1660.437875

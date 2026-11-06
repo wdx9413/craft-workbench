@@ -1,0 +1,115 @@
+{
+  "schema": "craft.workbench-browser-validation.v1",
+  "validated_at": "2026-10-30T12:42:17.464194+00:00",
+  "surface": "Ego Chromium browser; source Workbench and source Craft with installed craft-eval 0.1.2",
+  "scope": "temporary database and synthetic software fixtures; no real model request or native takeover",
+  "browser": {
+    "incompatible": {
+      "status": "无法比较：两次运行的评测集、运行配置、试验次数或被测类型不同。请选择条件一致的运行。",
+      "retryEnabled": true,
+      "staleReport": 0
+    },
+    "offline": {
+      "status": "无法比较：连接中断，请检查网络或本地服务后重试。",
+      "retryEnabled": true
+    },
+    "success": {
+      "status": "有效配对 1 / 1 · 候选胜 1 · 基准胜 0 · 平局 0",
+      "completedRuns": 3,
+      "restoredReport": true
+    },
+    "restoredAfterReload": true,
+    "empty": {
+      "options": 1,
+      "comparisonDisabled": true
+    },
+    "sameRunDisabled": true,
+    "keyboardCompare": true
+  },
+  "pending": {
+    "pending": {
+      "busy": true,
+      "selectionsDisabled": true,
+      "status": "正在校验并比较两次运行…"
+    },
+    "requests": 1,
+    "method": "native keyboard Enter during disabled pending state; cleared resource timings before click"
+  },
+  "narrow": {
+    "width": 780,
+    "height": 820,
+    "horizontalOverflow": false,
+    "focused": "比较结果",
+    "buttonsVisible": true,
+    "reportWidth": 470
+  },
+  "service": {
+    "evaluationStates": [
+      "completed",
+      "completed",
+      "completed"
+    ],
+    "comparisons": [
+      {
+        "decision": "diagnostic_only",
+        "knowledge_promotion_authorized": false,
+        "status": "comparable",
+        "measured_pairs": 1,
+        "candidate_wins": 1
+      }
+    ],
+    "taskMessages": 0,
+    "originalWorkspaces": {
+      "baseline": "1",
+      "candidate": "0"
+    }
+  },
+  "tests": {
+    "ui": {
+      "passed": 5,
+      "failed": 0
+    },
+    "core_api": {
+      "passed": 2,
+      "failed": 0
+    },
+    "module_coverage": {
+      "file": "workbench/evaluation-panel.js",
+      "lines": 100,
+      "branches": 100,
+      "functions": 100
+    }
+  },
+  "static_audit": {
+    "passed": false,
+    "errors": 55,
+    "snapshot_findings": 36,
+    "production_findings": 19
+  },
+  "sources": {
+    "craft-workbench/workbench/evaluation-panel.js": "d5db5e2fbd670ce6077e6fe2a01c05eeadd67f9740d120aa66a27e8220537037",
+    "craft-workbench/tests/evaluation-panel.test.ts": "dd6ba1d6c5d3e71596ab67185ee284abb4c2f1ba48a87a54df6c0852fc391c55",
+    "craft/core/interfaces/workbench-evaluations.ts": "6cf8f4fbaa8c3040440f1401fa4ed3f1770aa5adf0e7626981512f901ae05a57",
+    "craft/core/interfaces/workbench-server.ts": "c234753d1835dfe0ce79e5cbdf7792c78d03c3c64b416523303109c9e2a73e38",
+    "craft/tests/workbench-evaluations.test.ts": "e80c24c169e81d666dcf6569f13c6030a16b6885773b1af881758f24495f9335"
+  },
+  "screenshots": {
+    "01-comparison.png": "40887b10733d746d278426f64602cd5b1f7d2208ec5e00085b57edfcf9608fc4",
+    "03-incompatible.png": "c160333a570ce4ec462bee64bc89e680fbe586a792a25a55d5be0caaa4b59bec",
+    "02-comparison-narrow.png": "eed16227f2696997dd082ae404d8042a893ce242a68a3fe87a46a290402eddaf"
+  },
+  "limitations": [
+    "Synthetic sample proves workflow, not statistical business benefit or Knowledge promotion.",
+    "Browser surface only; no native Tauri window or Windows/Linux acceptance.",
+    "No native select popup acceptance claimed.",
+    "Full-project UI audit and full-change incremental coverage remain incomplete.",
+    "No publication, push or installed plugin upgrade."
+  ],
+  "cleanup": {
+    "test_process_stopped": true,
+    "browser_space": 4,
+    "browser_page": "p1",
+    "test_data_removed": true,
+    "browser_url": "about:blank"
+  }
+}

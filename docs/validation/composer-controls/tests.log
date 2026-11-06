@@ -1,0 +1,38 @@
+(node:44868) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native histories render messages and retain unfamiliar content (1.006ms)
+✔ native tool events show commands and results without repeating assistant text (0.644ms)
+✔ live output follows the bottom, preserves manual scroll and limits retained text (1.844458ms)
+✔ native workspace creates, connects, renders output and never retries an uncertain submission (19.456084ms)
+✔ first send creates the task and native session once, with the chosen project and full access (1.15525ms)
+(node:44869) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ composer sizing preserves CSS constraints and handles both box models (1.905625ms)
+✔ Enter uses the existing send action exactly once and preserves newline/modifier keys (0.374042ms)
+✔ IME composition and legacy 229 never submit; subsequent Enter can send (0.265334ms)
+(node:44870) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ evaluation panel validates, submits once, follows progress and renders the final report (4.94775ms)
+✔ evaluation comparison selects distinct completed runs, prevents duplicate requests and safely shows evidence (1.319084ms)
+✔ evaluation recovery preserves uncertainty, restores paths and releases only a confirmed missing run (1.121167ms)
+✔ evaluation path picking and storage failures do not duplicate submissions (1.237167ms)
+✔ unmounting while preparing submission prevents a real dispatch (0.405666ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.846708
+ℹ start of coverage report
+ℹ ----------------------------------------------------------------------
+ℹ file                  | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------------------
+ℹ workbench             |        |          |         | 
+ℹ  composer-controls.js | 100.00 |   100.00 |  100.00 | 
+ℹ  evaluation-panel.js  | 100.00 |   100.00 |  100.00 | 
+ℹ ----------------------------------------------------------------------
+ℹ all files             | 100.00 |   100.00 |  100.00 | 
+ℹ ----------------------------------------------------------------------
+ℹ end of coverage report
