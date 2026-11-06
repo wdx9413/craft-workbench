@@ -128,6 +128,40 @@ test('file-dir-desc page records a directory and promotes it', async () => {
   assert.ok(calls.some((c) => c.path === '/api/workbench/file-dir-desc/promote' && (c.body as { id: string }).id === 'd1'));
 });
 
+test('file-dir-desc page offers attributed relocation and withdrawal, and marks withdrawn rows', async () => {
+  const calls: Array<{ path: string; body?: unknown }> = [];
+  const data = { items: [
+    { id: 'd1', path: 'C:\\projects\\billing', description: 'billing service', hostKind: 'local', useCount: 3, status: 'promoted' },
+    { id: 'd2', path: 'C:\\projects\\old', description: 'legacy', hostKind: 'local', useCount: 3, status: 'revoked', revokedReason: 'project moved' },
+  ] };
+  let promptAnswer: string | null = 'D:\\work\\billing';
+  const pages = createModPages({
+    api: async (path: string, init?: unknown) => { calls.push({ path, body: init && (init as { body?: unknown }).body }); return data; },
+    presentation, notify: () => {}, fail: (e: Error) => { throw e; }, ask: () => promptAnswer, operator: () => 'user:alex',
+    paint: () => {}, go: () => {}, openInlineOn: () => {},
+  });
+  const view = await pages.filedir();
+  assert.match(view.html, /撤销后不会因再次使用自动恢复/u);
+  assert.match(view.html, /project moved/u);
+  const relocate = button({ 'data-desc-relocate': 'd1', getAttribute: (k: string) => (k === 'data-desc-relocate' ? 'd1' : null) } as never);
+  const revoke = button({ 'data-desc-revoke': 'd1', getAttribute: (k: string) => (k === 'data-desc-revoke' ? 'd1' : null) } as never);
+  const nodes = { querySelector: () => null, querySelectorAll: (s: string) =>
+    s === '[data-desc-relocate]' ? [relocate] : s === '[data-desc-revoke]' ? [revoke] : [] };
+  view.mounts[0](nodes as never);
+  (relocate as { onclick?: () => void }).onclick!(); await flush();
+  assert.deepEqual(calls.find((c) => c.path === '/api/workbench/file-dir-desc/relocate')?.body,
+    { id: 'd1', path: 'D:\\work\\billing' });
+  // A withdrawal without a reason is refused locally, never sent half-formed.
+  promptAnswer = '   ';
+  const before = calls.length;
+  (revoke as { onclick?: () => void }).onclick!(); await flush();
+  assert.equal(calls.length, before);
+  promptAnswer = 'project moved';
+  (revoke as { onclick?: () => void }).onclick!(); await flush();
+  assert.deepEqual(calls.find((c) => c.path === '/api/workbench/file-dir-desc/revoke')?.body,
+    { id: 'd1', revoked_by: 'user:alex', reason: 'project moved' });
+});
+
 test('onboarding page shows completion state and reset; mode-confirm shows counts', async () => {
   let settings: Record<string, unknown> = { workbench: { onboarding: { completedAt: null } } };
   const pages = createModPages({

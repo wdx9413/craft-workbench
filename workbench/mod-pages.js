@@ -165,10 +165,19 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
     return api('/api/workbench/file-dir-desc/list?limit=200').then(function (result) {
       var items = (result && result.items) || [];
       var rows = items.length ? items.map(function (item) {
-        var actions = '<button class="btn sm" type="button" data-desc-promote="' + esc(item.id) + '">提升正式</button>';
+        // NEEDREAD 16 (目录语义): correction, relocation and withdrawal are
+        // separate attributed actions, not one generic "confirm".
+        var withdrawn = item.status === 'revoked';
+        var actions = withdrawn
+          ? '<button class="btn sm" type="button" data-desc-promote="' + esc(item.id) + '">恢复正式</button>'
+          : '<button class="btn sm" type="button" data-desc-promote="' + esc(item.id) + '">提升正式</button>' +
+            '<button class="btn sm" type="button" data-desc-relocate="' + esc(item.id) + '">搬迁</button>' +
+            '<button class="btn sm danger" type="button" data-desc-revoke="' + esc(item.id) + '">撤销</button>';
         return '<div class="row"><span class="row-lead muted">' + icon('folder') + '</span><div class="row-main">' +
           rowTitle(item.path) + '<span class="row-sub">' + esc(item.description || '（暂无描述）') + ' · ' + esc(item.hostKind || 'local') +
-          ' · 已用 ' + Number(item.useCount || 0) + ' 次 · ' + modStatusLabel(item.status, item.status === 'promoted') + '</span>' + actions + '</div></div>';
+          ' · 已用 ' + Number(item.useCount || 0) + ' 次 · ' + modStatusLabel(item.status, item.status === 'promoted') +
+          (withdrawn ? ' · 撤销后不会因再次使用自动恢复' + (item.revokedReason ? '（' + esc(item.revokedReason) + '）' : '') : '') +
+          '</span>' + actions + '</div></div>';
       }).join('') : '';
       var form = '<input id="desc-path" placeholder="绝对路径"><input id="desc-desc" placeholder="语义描述">' +
         '<select id="desc-host"><option value="local">本地</option><option value="cloud">云端</option></select>' +
@@ -207,6 +216,30 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
               var id = button.getAttribute('data-desc-promote');
               api('/api/workbench/file-dir-desc/promote', { method: 'POST', body: { id: id } })
                 .then(function () { toast('目录已提升为正式'); paint('filedir'); }).catch(fail);
+            };
+          });
+          root.querySelectorAll('[data-desc-relocate]').forEach(function (button) {
+            button.onclick = function () {
+              var id = button.getAttribute('data-desc-relocate');
+              var next = ask('目录的新绝对路径（取消则不动）');
+              if (!next || !String(next).trim()) return;
+              button.disabled = true;
+              api('/api/workbench/file-dir-desc/relocate', { method: 'POST', body: { id: id, path: String(next).trim() } })
+                .then(function () { toast('目录已搬迁，使用次数与描述保留'); paint('filedir'); })
+                .catch(function (error) { button.disabled = false; fail(error); });
+            };
+          });
+          root.querySelectorAll('[data-desc-revoke]').forEach(function (button) {
+            button.onclick = function () {
+              var id = button.getAttribute('data-desc-revoke');
+              var reason = ask('撤销原因（必填；撤销后不会被召回，也不会被再次使用自动恢复）');
+              if (reason === null) return;
+              if (!String(reason).trim()) { toast('撤销必须写原因', true); return; }
+              button.disabled = true;
+              api('/api/workbench/file-dir-desc/revoke', { method: 'POST', body: {
+                id: id, revoked_by: operatorOf(), reason: String(reason).trim() } })
+                .then(function () { toast('已撤销；如需恢复请手动提升为正式'); paint('filedir'); })
+                .catch(function (error) { button.disabled = false; fail(error); });
             };
           });
         }]
