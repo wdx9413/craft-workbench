@@ -84,7 +84,7 @@ test('the installed CLI serves recovery assets, reconciles an input and executes
   const require = createRequire(import.meta.url), packagePath = require.resolve('craft/package.json');
   const manifest = JSON.parse(await readFile(packagePath, 'utf8'));
   const cli = join(dirname(packagePath), manifest.bin.craft);
-  const child = spawn(process.execPath, [cli, 'serve', '--port', '0', '--parent-stdin', '--workbench-dir', join(import.meta.dirname, '..', 'workbench')], { env: { ...process.env, CRAFT_DATA_DIR: root }, stdio: ['pipe', 'pipe', 'ignore'] });
+  const child = spawn(process.execPath, [cli, 'serve', '--port', '0', '--parent-stdin', '--workbench-dir', join(import.meta.dirname, '..', 'workbench')], { env: { ...process.env, CRAFT_DATA_DIR: root }, stdio: ['pipe', 'pipe', 'pipe'] });
   const exit = new Promise<void>(resolve => child.once('exit', () => resolve()));
   let deadline: ReturnType<typeof setTimeout> | undefined;
   let ownedAdapter: number | undefined;
@@ -92,13 +92,15 @@ test('the installed CLI serves recovery assets, reconciles an input and executes
   try {
     const ready = new Promise<URL>((resolve, reject) => {
       let output = '';
+      let errors = '';
       child.stdout.on('data', bytes => {
         output = (output + String(bytes)).slice(-64 * 1024);
         const line = /^Craft API: (.+)\r?\n/m.exec(output);
         if (line) { try { resolve(new URL(line[1])); } catch { reject(new Error('invalid CLI startup address')); } }
       });
+      child.stderr.on('data', bytes => { errors = (errors + String(bytes)).slice(-8_192); });
       child.once('error', reject);
-      child.once('exit', () => reject(new Error('CLI exited before readiness')));
+      child.once('exit', code => reject(new Error(`CLI exited before readiness (code ${String(code)}): ${errors.trim() || 'no stderr output'}`)));
       deadline = setTimeout(() => reject(new Error('CLI startup did not become ready')), 20_000);
     });
     const address = await ready;

@@ -6,15 +6,16 @@ autoInstallPeers: false
 allowBuilds:
   tesseract.js: false
 
-# The harness publishes its workspace packages separately, so vendor/craft-*.tgz
-# no longer bundles them. Pin each to the sibling tarball shipped beside it so
-# `pnpm install` resolves the whole closure from vendor/ with no registry.
-overrides:
-  '@craft/capability-codebase': file:vendor/craft-capability-codebase-0.12.131.tgz
-  '@craft/capability-experience': file:vendor/craft-capability-experience-0.12.131.tgz
-  '@craft/capability-knowledge': file:vendor/craft-capability-knowledge-0.12.131.tgz
-  '@craft/capability-memory': file:vendor/craft-capability-memory-0.12.131.tgz
-  craft-common-base: file:vendor/craft-common-base-0.12.131.tgz
-  craft-common-log: file:vendor/craft-common-log-0.12.131.tgz
-  craft-common-store-local: file:vendor/craft-common-store-local-0.12.131.tgz
-  craft-eval: file:vendor/craft-eval-0.1.5.tgz
+# Internal versions are fixed by pnpm-lock.yaml and published to the
+# authenticated local registry. Exempt only those exact versions from the
+# default release-age delay; public dependencies retain the delay.
+minimumReleaseAgeExclude:
+  - '@craft/capability-codebase@0.14.0'
+  - '@craft/capability-experience@0.14.0'
+  - '@craft/capability-knowledge@0.14.0'
+  - '@craft/capability-memory@0.14.0'
+  - craft-common-base@0.14.0
+  - craft-common-log@0.14.0
+  - craft-common-store-local@0.14.0
+  - craft-eval@0.1.5
+  - craft@0.14.0
