@@ -10,12 +10,12 @@ allowBuilds:
 # authenticated local registry. Exempt only those exact versions from the
 # default release-age delay; public dependencies retain the delay.
 minimumReleaseAgeExclude:
-  - '@craft/capability-codebase@0.14.0'
-  - '@craft/capability-experience@0.14.0'
-  - '@craft/capability-knowledge@0.14.0'
-  - '@craft/capability-memory@0.14.0'
-  - craft-common-base@0.14.0
-  - craft-common-log@0.14.0
-  - craft-common-store-local@0.14.0
-  - craft-eval@0.1.5
-  - craft@0.14.0
+  - '@craft/capability-codebase@0.15.0'
+  - '@craft/capability-experience@0.15.0'
+  - '@craft/capability-knowledge@0.15.0'
+  - '@craft/capability-memory@0.15.0'
+  - craft-common-base@0.15.0
+  - craft-common-log@0.15.0
+  - craft-common-store-local@0.15.0
+  - craft-eval@0.2.0
+  - craft@0.15.0

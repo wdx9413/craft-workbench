@@ -6,6 +6,7 @@ class Element {
   value = ''; textContent = ''; innerHTML = ''; disabled = false; hidden = false; focused = false; checked = false;
   children: Element[] = []; onclick: (() => Promise<void> | void) | undefined;
   onchange: (() => void) | undefined;
+  oninput: (() => void) | undefined;
   append(...nodes: Element[]) { this.children.push(...nodes); }
   replaceChildren() { this.children = []; }
   focus() { this.focused = true; }
@@ -171,6 +172,104 @@ test('unmounting while preparing submission prevents a real dispatch', async () 
     for (const key of ['workspace', 'suite', 'subject', 'runtime']) node(`[data-eval="${key}"]`).value = '/tmp/' + key;
     const starting = node('[data-eval="start"]').onclick!(); panel.destroy(); await starting;
     assert.equal(posts, 0);
+  } finally { globalThis.document = saved; }
+});
+
+test('Context receipt audit uses local files, retries idempotently and renders only bounded audit evidence', async () => {
+  const saved = globalThis.document; globalThis.document = { createElement: () => new Element() } as unknown as Document;
+  const nodes = new Map<string, Element>();
+  const node = (selector: string) => { if (!nodes.has(selector)) nodes.set(selector, new Element()); return nodes.get(selector)!; };
+  const q = (key: string) => node(`[data-eval="${key}"]`);
+  const stored = new Map<string, string>();
+  const storage = { getItem: (key: string) => stored.get(key) || null, setItem: (key: string, value: string) => stored.set(key, value), removeItem: (key: string) => stored.delete(key) };
+  const calls: Array<{ path: string; options?: { method: string; body: Record<string, string> } }> = [];
+  let fail = true;
+  const api = async (path: string, options?: { method: string; body: Record<string, string> }) => {
+    calls.push({ path, options });
+    if (fail) throw new Error('connection lost');
+    const report = { status: 'inconclusive', case_id: 'receipt-case', metrics: { selected_ref_count: 2, selected_item_count: 1, selected_chars: 21, estimated_tokens: 8, host_measured_tokens: null }, checks: [{ id: 'required_ref_recall', status: 'passed', observed: 1, expected: 1 }], partial: false, limitations: ['body omitted: RAW_SECRET_CONTENT'] };
+    return options ? { audit: { id: 'c'.repeat(64), status: 'inconclusive', input_digest: 'digest', report_digest: 'report-hash', evaluator_version: '0.2.0' }, report, integrity: 'verified_against_saved_report' } : { audit: { status: 'inconclusive', input_digest: 'digest', report_digest: 'report-hash', evaluator_version: '0.2.0' }, report, integrity: 'verified_against_saved_report' };
+  };
+  try {
+    const selected: string[] = ['/tmp/pack.json', '/tmp/expectations.json'];
+    let index = 0;
+    const panel = mountEvaluationPanel({ innerHTML: '', querySelector: node }, { api, storage, invoke: async () => selected[index++] });
+    assert.equal(q('context-audit-start').disabled, true);
+    const picks: Record<string, () => Promise<void> | void> = {};
+    picks.pack = node('[data-pick-context="pack"]').onclick!;
+    await picks.pack(); picks.expectations = node('[data-pick-context="expectations"]').onclick!; await picks.expectations();
+    assert.equal(q('context-audit-start').disabled, false);
+    await q('context-audit-start').onclick!();
+    assert.match(q('context-audit-status').textContent, /安全重试/u);
+    const firstOperation = calls.at(-1)!.options!.body.operation_id;
+    assert.equal(calls.at(-1)!.path, '/api/workbench/evaluations/context-audit');
+    assert.equal(calls.at(-1)!.options!.body.pack_path, '/tmp/pack.json');
+    fail = false; await q('context-audit-start').onclick!();
+    assert.equal(calls.at(-1)!.options!.body.operation_id, firstOperation);
+    assert.match(q('context-audit-status').textContent, /证据不足.*完整性已校验/u);
+    assert.match(q('context-audit-identity').textContent, /^审计 c{12} · 评测器 0\.2\.0/u);
+    assert.match(q('context-audit-report').children[0].textContent, /引用 2.*Host Token 未记录/u);
+    assert.doesNotMatch(JSON.stringify(q('context-audit-report').children), /RAW_SECRET_CONTENT/u);
+    assert.equal(q('context-audit-check').disabled, false);
+    q('context-pack').value = '/tmp/new-pack.json'; q('context-pack').oninput!();
+    assert.equal(q('context-audit-report').children.length, 0);
+    assert.equal(stored.has('craft-context-audit-operation'), false);
+    panel.destroy();
+  } finally { globalThis.document = saved; }
+});
+
+test('Context audit restores its last report, bounds check details and invalidates stale results', async () => {
+  const saved = globalThis.document; globalThis.document = { createElement: () => new Element() } as unknown as Document;
+  const nodes = new Map<string, Element>();
+  const node = (selector: string) => { if (!nodes.has(selector)) nodes.set(selector, new Element()); return nodes.get(selector)!; };
+  const q = (key: string) => node(`[data-eval="${key}"]`);
+  const auditId = 'd'.repeat(64), values = new Map([['craft-context-audit-operation', 'persisted-operation'], ['craft-context-audit-id', auditId]]);
+  const storage = { getItem: (key: string) => values.get(key) || null, setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key) };
+  const checks = Array.from({ length: 101 }, (_, index) => ({ id: `check-${index}`, status: index % 3 === 0 ? 'failed' : index % 3 === 1 ? 'inconclusive' : 'passed', observed: null, expected: index }));
+  let report: unknown = { status: 'failed', case_id: 'restored', metrics: {}, checks, partial: true }, auditStatus = 'failed', readFails = false;
+  const paths: string[] = [];
+  const api = async (path: string) => { paths.push(path); if (readFails) throw new Error('report unavailable'); return { audit: { status: auditStatus, input_digest: 'digest', report_digest: 'hash' }, report, integrity: 'verified_against_saved_report' }; };
+  try {
+    const panel = mountEvaluationPanel({ innerHTML: '', querySelector: node }, { api, storage });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(paths[0], `/api/workbench/evaluations/context-audit/${auditId}/report`);
+    assert.match(q('context-audit-status').textContent, /未通过.*完整性已校验/u);
+    assert.equal(q('context-audit-report').children.length, 103);
+    readFails = true; await q('context-audit-check').onclick!();
+    assert.match(q('context-audit-status').textContent, /读取未确认：report unavailable/u); readFails = false;
+    assert.equal(paths.length, 2);
+    q('context-audit-new').onclick!();
+    assert.equal(values.has('craft-context-audit-id'), false);
+    assert.equal(values.has('craft-context-audit-operation'), false);
+    await q('context-audit-check').onclick!(); // Empty identity is a no-op.
+    assert.equal(paths.length, 2);
+    report = { status: 'passed', case_id: 'new', metrics: {}, checks: [], partial: false }; auditStatus = 'passed';
+    q('context-pack').value = '/tmp/pack'; q('context-pack').oninput!(); q('context-expectations').value = '/tmp/manifest'; q('context-expectations').oninput!();
+    const start = q('context-audit-start').onclick!(); await start;
+    assert.match(q('context-audit-status').textContent, /通过.*完整性已校验/u);
+    report = null;
+    q('context-audit-new').onclick!();
+    q('context-pack').value = '/tmp/pack'; q('context-pack').oninput!(); q('context-expectations').value = '/tmp/manifest'; q('context-expectations').oninput!();
+    await q('context-audit-start').onclick!();
+    assert.match(q('context-audit-status').textContent, /审计未确认/u);
+    panel.destroy();
+  } finally { globalThis.document = saved; }
+});
+
+test('Context audit ignores late asynchronous responses after unmount', async () => {
+  const saved = globalThis.document; globalThis.document = { createElement: () => new Element() } as unknown as Document;
+  const nodes = new Map<string, Element>();
+  const node = (selector: string) => { if (!nodes.has(selector)) nodes.set(selector, new Element()); return nodes.get(selector)!; };
+  const q = (key: string) => node(`[data-eval="${key}"]`);
+  let release!: (value: unknown) => void;
+  const storage = { getItem: (key: string) => key === 'craft-context-audit-id' ? 'e'.repeat(64) : null };
+  try {
+    const panel = mountEvaluationPanel({ innerHTML: '', querySelector: node }, { storage, api: async () => new Promise((resolve, reject) => { release = () => reject(new Error('late failure')); }) });
+    const initialStatus = q('context-audit-status').textContent;
+    panel.destroy();
+    release({ audit: { status: 'passed' }, report: { status: 'passed', metrics: {}, checks: [] }, integrity: 'verified_against_saved_report' });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(q('context-audit-status').textContent, initialStatus);
   } finally { globalThis.document = saved; }
 });
 

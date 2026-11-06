@@ -1,3 +1,4 @@
+import { mountContextAuditPanel } from './context-audit-panel.js';
 const BASE = '/api/workbench/evaluations';
 const labels = { starting: '准备中', running: '评测中', cancelling: '正在取消', cancelled: '已取消', completed: '已生成报告', failed: '执行失败', unknown: '结果未知，需核对' };
 const comparisonErrors = {
@@ -14,6 +15,15 @@ export function mountEvaluationPanel(root, { api, invoke, clock = globalThis, st
     <div class="evaluation-fields">${[['workspace', '项目文件夹'], ['suite', '评测集'], ['subject', '被测版本配置'], ['runtime', '运行配置']].map(([key, title]) => `<label>${title}<span><input data-eval="${key}" aria-label="${title}" placeholder="完整路径"><button type="button" data-pick="${key}">选择</button></span></label>`).join('')}</div>
     <div class="evaluation-actions"><button type="button" class="btn primary" data-eval="start">开始评测</button><button type="button" class="btn" data-eval="cancel" disabled>取消评测</button><button type="button" class="btn" data-eval="refresh" disabled>核对运行</button><button type="button" class="btn" data-eval="new" disabled>新评测</button></div>
     <p data-eval="status" role="status" aria-live="polite">尚未开始。</p><p data-eval="provenance" class="evaluation-run-identity"></p><div data-eval="progress" class="evaluation-progress"></div><div data-eval="report" class="evaluation-report"></div>
+    <details class="evaluation-comparison evaluation-context-audit" data-eval="context-audit-section"><summary>审计 Context 回执</summary>
+      <p>核对回执中的引用、条目数量和预算约束。由本机 Workbench 有界读取，不保存原始回执正文；审计不证明模型实际使用或任务收益。</p>
+      <div class="evaluation-fields">
+        <label>Context 回执 JSON<span><input data-eval="context-pack" aria-label="Context 回执 JSON" placeholder="选择 craft_context_open 响应文件"><button type="button" data-pick-context="pack">选择</button></span></label>
+        <label>期望清单 JSON<span><input data-eval="context-expectations" aria-label="期望清单 JSON" placeholder="选择冻结的期望引用与预算"><button type="button" data-pick-context="expectations">选择</button></span></label>
+      </div>
+      <div class="evaluation-actions"><button type="button" class="btn primary" data-eval="context-audit-start">审计回执</button><button type="button" class="btn" data-eval="context-audit-check" disabled>核对结果</button><button type="button" class="btn" data-eval="context-audit-new" disabled>新审计</button></div>
+      <p data-eval="context-audit-status" role="status" aria-live="polite">尚未审计。</p><p data-eval="context-audit-identity" class="evaluation-run-identity"></p><div data-eval="context-audit-report" class="evaluation-report"></div>
+    </details>
     <section data-eval="recovery" class="evaluation-recovery" aria-label="核对未知结果" hidden><strong>先核对这次运行</strong><p>结果未知不代表执行已停止。请检查输出目录及相关进程，避免重复执行。</p><p data-eval="identity" class="evaluation-run-identity"></p><label><input type="checkbox" data-eval="confirmed">我已核对输出和进程，确认原执行已停止</label><button type="button" class="btn" data-eval="prepare" disabled>保留记录并准备新评测</button><p>原结果保持未知。这里只准备新表单，不会停止进程、修改记录或重新发送。</p></section>
     <details data-eval="unresolved" class="evaluation-comparison" hidden><summary>待核对的评测</summary><p>最近 20 个本机查看过的未知运行。记录不会因新评测而删除，查看时会重新核对服务状态。</p><div class="evaluation-fields"><label>运行记录<select data-eval="unknown-run" aria-label="待核对运行"></select></label></div><button type="button" class="btn" data-eval="open-unknown" disabled>查看运行记录</button></details>
     <details class="evaluation-comparison"><summary>比较两次评测</summary><p>选择在本机查看过的两次已完成运行。比较只用于诊断，不代表知识晋级或发布通过。</p>
@@ -64,6 +74,7 @@ export function mountEvaluationPanel(root, { api, invoke, clock = globalThis, st
     if (Array.isArray(saved)) completed = saved.filter(item => item && /^[a-f0-9]{64}$/.test(item.id) && typeof item.title === 'string' && item.title.length <= 256).slice(-20);
   } catch { /* Ignore invalid or unavailable browser storage. */ }
   comparisonOptions();
+  const contextAudit = mountContextAuditPanel(root, { api, invoke, storage, crypto });
   for (const key of ['baseline', 'candidate']) q(key).onchange = () => {
     q('comparison-report').replaceChildren(); q('comparison-status').textContent = ''; comparisonControls();
   };
@@ -217,5 +228,5 @@ export function mountEvaluationPanel(root, { api, invoke, clock = globalThis, st
   try { id = storage?.getItem('craft-evaluation-id') || ''; } catch { /* Private mode can disable storage. */ }
   if (id && /^[a-f0-9]{64}$/.test(id)) { active = true; controls(false); void refresh(); }
   else { id = ''; controls(false); }
-  return { refresh, destroy() { stopped = true; ++serial; clearTimeout(timer); } };
+  return { refresh, destroy() { stopped = true; ++serial; clearTimeout(timer); contextAudit.destroy(); } };
 }

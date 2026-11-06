@@ -1807,6 +1807,10 @@ border-radius: 50%;
 .evaluation-fields input, .evaluation-fields select { flex: 1; min-width: 0; width: 100%; border: 1px solid var(--line); border-radius: var(--r2, 8px); padding: 8px 10px; background: var(--bg-surface); color: var(--text); font: inherit; }
 .evaluation-comparison { border-top: 1px solid var(--hair); margin-top: 16px; padding-top: 12px; }
 .evaluation-comparison > p { color: var(--text-2); font-size: 13px; }
+.evaluation-context-audit { border: 1px solid var(--hair); border-radius: var(--r2, 8px); padding: 12px 16px; }
+.evaluation-context-audit > summary { cursor: pointer; font-weight: 600; }
+.evaluation-context-audit .evaluation-report > p { overflow-wrap: anywhere; }
+.evaluation-context-audit summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .evaluation-fields button { cursor: pointer; }
 .evaluation-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .evaluation-recovery { border: 1px solid var(--line); border-radius: var(--r2, 8px); padding: 16px; margin-block: 16px; }

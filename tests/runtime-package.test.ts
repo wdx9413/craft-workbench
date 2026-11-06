@@ -139,7 +139,7 @@ test('the installed CLI serves recovery assets, reconciles an input and executes
       await new Promise(resolve => setTimeout(resolve, 20));
     } while (Date.now() < completedBy);
     assert.equal(record.state, 'completed', JSON.stringify(record));
-    assert.equal(record.evaluator_version, '0.1.5');
+    assert.equal(record.evaluator_version, '0.2.0');
     const report = await fetch(new URL(`${base.pathname}/${id}/report`, address), { headers });
     assert.equal(report.status, 200);
     const result = await report.json() as { report: { passed: number }; integrity: string };
