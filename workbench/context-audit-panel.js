@@ -29,8 +29,9 @@ export function mountContextAuditPanel(root, { api, invoke, storage = globalThis
     if (!report || typeof report !== 'object') throw new Error('服务未返回有效审计报告');
     const view = q('context-audit-report'); view.replaceChildren();
     const statusText = { passed: '通过', failed: '未通过', inconclusive: '证据不足' }[report.status] || '未知';
+    const omitted = Number.isSafeInteger(report.metrics?.response_omitted_items) ? report.metrics.response_omitted_items : 0;
     const summary = document.createElement('p');
-    summary.textContent = `${statusText} · 引用 ${report.metrics?.selected_ref_count ?? '—'} · 条目 ${report.metrics?.selected_item_count ?? '—'} · 字符 ${report.metrics?.selected_chars ?? '—'} · 估算 Token ${report.metrics?.estimated_tokens ?? '未记录'} · Host Token ${report.metrics?.host_measured_tokens ?? '未记录'}`;
+    summary.textContent = `${statusText} · 引用 ${report.metrics?.selected_ref_count ?? '—'} · 条目 ${report.metrics?.selected_item_count ?? '—'} · 字符 ${report.metrics?.selected_chars ?? '—'} · 估算 Token ${report.metrics?.estimated_tokens ?? '未记录'} · Host Token ${report.metrics?.host_measured_tokens ?? '未记录'}${omitted ? ` · 响应不完整，省略 ${omitted} 条` : ''}`;
     view.append(summary);
     const checks = Array.isArray(report.checks) ? report.checks : [];
     for (const check of checks.slice(0, 100)) {

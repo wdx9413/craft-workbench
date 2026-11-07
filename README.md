@@ -18,7 +18,7 @@ pnpm desktop:dev
 pnpm desktop:build
 ```
 
-正式路径从依赖包解析 Runtime，不要求同级存在 `craft/` 源码。当前 npm registry 尚未提供本项目的核心包，使用 `vendor/` 中固定 tarball，并由锁文件约束完整性。该包是本地联调产物，不代表正式发布；后续发布须绑定精确源码与验收记录。桌面 sidecar 从已安装包准备到 `dist/runtime/app`，开发与正式窗口均使用准备好的编译产物。
+正式路径从依赖包解析 Runtime，不要求同级存在 `craft/` 源码。Workbench 通过已认证的本机私有 npm 制品仓库安装固定版本 `craft@0.19.0`，锁文件同时校验包版本和完整性摘要；当前发行包已完成私服读回与摘要备份。开发机私服地址只适用于本机，其他机器需要部署自己的仓库并导入经校验的制品，不能依赖开发机的 localhost。桌面 sidecar 从已安装包准备到 `dist/runtime/app`，开发与正式窗口均使用准备好的编译产物。
 
 ## 显式源码联调
 

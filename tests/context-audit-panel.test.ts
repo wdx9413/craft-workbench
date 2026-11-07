@@ -28,7 +28,7 @@ function fixture({ noPickers = false, storage = new Map<string, string>(), api =
   return { node, panel, storage, restore() { panel.destroy(); globalThis.document = original; } };
 }
 
-const report = (status = 'passed', checks: unknown = []) => ({ audit: { id: 'a'.repeat(64), status, input_digest: 'input', report_digest: 'report', evaluator_version: '0.5.0' }, report: { status, case_id: 'case-1', metrics: {}, checks, partial: false }, integrity: 'verified_against_saved_report' });
+const report = (status = 'passed', checks: unknown = []) => ({ audit: { id: 'a'.repeat(64), status, input_digest: 'input', report_digest: 'report', evaluator_version: '0.6.0' }, report: { status, case_id: 'case-1', metrics: {}, checks, partial: false }, integrity: 'verified_against_saved_report' });
 
 test('context audit validates, persists an idempotent operation and renders only report evidence', async () => {
   const calls: Array<{ path: string; options?: unknown }> = [];
@@ -50,6 +50,24 @@ test('context audit validates, persists an idempotent operation and renders only
     f.node('[data-eval="context-audit-new"]').onclick!();
     assert.equal(f.storage.has('craft-context-audit-operation'), false);
     assert.equal(f.storage.has('craft-context-audit-id'), false);
+  } finally { f.restore(); }
+});
+
+test('context audit calls out response-level omissions in its compact summary', async () => {
+  const f = fixture({ api: async () => ({
+    audit: { id: 'a'.repeat(64), status: 'inconclusive', input_digest: 'input', report_digest: 'report', evaluator_version: '0.6.0' },
+    report: { status: 'inconclusive', case_id: 'case-1', metrics: { selected_ref_count: 2, selected_item_count: 1, selected_chars: 40,
+      estimated_tokens: 12, host_measured_tokens: null, response_omitted_items: 2 },
+      checks: [{ id: 'complete_response', status: 'inconclusive', observed: 2, expected: 0 }], partial: true },
+    integrity: 'verified_against_saved_report',
+  }) });
+  try {
+    const q = (key: string) => f.node(`[data-eval="${key}"]`);
+    q('context-pack').value = '/tmp/pack.json'; q('context-pack').oninput!();
+    q('context-expectations').value = '/tmp/manifest.json'; q('context-expectations').oninput!();
+    await q('context-audit-start').onclick!();
+    assert.match(q('context-audit-report').children[0]!.textContent, /响应不完整，省略 2 条/u);
+    assert.match(q('context-audit-report').children[1]!.textContent, /complete_response/u);
   } finally { f.restore(); }
 });
 
