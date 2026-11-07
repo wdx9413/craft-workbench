@@ -11,11 +11,29 @@ allowBuilds:
 # default release-age delay; public dependencies retain the delay.
 minimumReleaseAgeExclude:
   - '@craft/capability-codebase@0.16.0'
+  - '@craft/capability-codebase@0.17.0'
+  - '@craft/capability-codebase@0.18.0'
   - '@craft/capability-experience@0.16.0'
+  - '@craft/capability-experience@0.17.0'
+  - '@craft/capability-experience@0.18.0'
   - '@craft/capability-knowledge@0.16.0'
+  - '@craft/capability-knowledge@0.17.0'
+  - '@craft/capability-knowledge@0.18.0'
   - '@craft/capability-memory@0.16.0'
+  - '@craft/capability-memory@0.17.0'
+  - '@craft/capability-memory@0.18.0'
   - craft-common-base@0.16.0
+  - craft-common-base@0.17.0
+  - craft-common-base@0.18.0
   - craft-common-log@0.16.0
+  - craft-common-log@0.17.0
+  - craft-common-log@0.18.0
   - craft-common-store-local@0.16.0
+  - craft-common-store-local@0.17.0
+  - craft-common-store-local@0.18.0
   - craft-eval@0.3.0
+  - craft-eval@0.4.0
+  - craft-eval@0.5.0
   - craft@0.16.0
+  - craft@0.17.0
+  - craft@0.18.0

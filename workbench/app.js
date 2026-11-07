@@ -12,6 +12,7 @@ import { resizeComposers } from './composer-controls.js';
 import { splitRail, railNavHtml } from './rail-nav.js';
 import { mountEvaluationPanel } from './evaluation-panel.js';
 import { mountNativeTools } from './native-tools-panel.js';
+import { mountHookDiagnosticsPanel, renderHookDiagnostics } from './hook-diagnostics.js';
 import { bindRecallAudit, bindWeightTrend } from './recall-audit.js';
 import { applyAssetFocus } from './asset-focus.js';
 import { MODES, MODE_ORDER, modeNavKeys, readMode, writeMode, readPilotSession, writePilotSession, legacyNavEnabled } from './mode-shell.js';
@@ -3319,6 +3320,10 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, effectPill, s
             '<div class="card-body"><div class="rows">' + toolRows + '</div><pre class="agent-install-output" id="tool-install-output" hidden></pre>' + toolsBlock + '</div></div>' +
           '<div class="card">' + head('上下文远端存储', '记忆 / 知识 / 经验默认只存本地；可另外镜像到 Obsidian vault 或任意文件夹，两份各自独立') +
             '<div class="card-body tight"><div class="rows">' + contextStorageRows + '</div></div></div>' +
+          '<div class="card">' + head('Hook 诊断', '按需读取本机最近记录；只显示阶段和耗时，不读取输入正文',
+            '<button class="btn sm" type="button" data-hook-diagnostics-refresh>读取最近记录</button>') +
+            '<div class="card-body"><p class="hint" role="status" aria-live="polite" data-hook-diagnostics-status>尚未读取。结束记录缺失表示进程仍在运行或被中断，不能单凭此记录断定是 Host 超时。</p>' +
+              '<div data-hook-diagnostics-list>' + renderHookDiagnostics({ items: [], partial: false }) + '</div></div></div>' +
           '<div class="grid-2">' +
             '<div class="card">' + head('外观与偏好', '浅色为默认；更改会立即预览',
               '<button class="btn primary" id="settings-save" type="button">' + icon('check') + '保存设置</button>') +
@@ -3352,6 +3357,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, effectPill, s
                 }).join('') + '</div>'
               : '<div class="aside-note">还没有添加模型。</div>'),
         mounts: [function (root) {
+          pagePanels.push(mountHookDiagnosticsPanel(root, { api: api }));
           root.querySelector('#settings-save').onclick = saveSettings;
           var modelsBtn = root.querySelector('#models-manage');
           if (modelsBtn) modelsBtn.onclick = function () { openModelSheet({ step: 1, preset: null, model: '', name: '' }); };

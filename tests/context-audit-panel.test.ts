@@ -28,7 +28,7 @@ function fixture({ noPickers = false, storage = new Map<string, string>(), api =
   return { node, panel, storage, restore() { panel.destroy(); globalThis.document = original; } };
 }
 
-const report = (status = 'passed', checks: unknown = []) => ({ audit: { id: 'a'.repeat(64), status, input_digest: 'input', report_digest: 'report', evaluator_version: '0.3.0' }, report: { status, case_id: 'case-1', metrics: {}, checks, partial: false }, integrity: 'verified_against_saved_report' });
+const report = (status = 'passed', checks: unknown = []) => ({ audit: { id: 'a'.repeat(64), status, input_digest: 'input', report_digest: 'report', evaluator_version: '0.5.0' }, report: { status, case_id: 'case-1', metrics: {}, checks, partial: false }, integrity: 'verified_against_saved_report' });
 
 test('context audit validates, persists an idempotent operation and renders only report evidence', async () => {
   const calls: Array<{ path: string; options?: unknown }> = [];

@@ -32,6 +32,7 @@ test("Craft Workbench serves the explicitly mounted presentation project", async
   // described. The runtime's headline guarantee is an approval gate, so a Studio
   // without a place to approve is the inconsistency this release removes.
   const workbenchScript = app.handle({ method: "GET", path: "/workbench/app.js" }).body;
+  assert.match(workbenchScript, /role="status" aria-live="polite" data-hook-diagnostics-status/u);
   // The desktop must land on the full workbench. Replacing it with the
   // conversation shell on boot hid the rail, settings and every capability page.
   assert.doesNotMatch(workbenchScript, /if \(nativeDesktop \|\| !params\.has\('page'\)\) projectShell\.show\(\)/u);

@@ -188,7 +188,7 @@ test('Context receipt audit uses local files, retries idempotently and renders o
     calls.push({ path, options });
     if (fail) throw new Error('connection lost');
     const report = { status: 'inconclusive', case_id: 'receipt-case', metrics: { selected_ref_count: 2, selected_item_count: 1, selected_chars: 21, estimated_tokens: 8, host_measured_tokens: null }, checks: [{ id: 'required_ref_recall', status: 'passed', observed: 1, expected: 1 }], partial: false, limitations: ['body omitted: RAW_SECRET_CONTENT'] };
-    return options ? { audit: { id: 'c'.repeat(64), status: 'inconclusive', input_digest: 'digest', report_digest: 'report-hash', evaluator_version: '0.3.0' }, report, integrity: 'verified_against_saved_report' } : { audit: { status: 'inconclusive', input_digest: 'digest', report_digest: 'report-hash', evaluator_version: '0.3.0' }, report, integrity: 'verified_against_saved_report' };
+    return options ? { audit: { id: 'c'.repeat(64), status: 'inconclusive', input_digest: 'digest', report_digest: 'report-hash', evaluator_version: '0.5.0' }, report, integrity: 'verified_against_saved_report' } : { audit: { status: 'inconclusive', input_digest: 'digest', report_digest: 'report-hash', evaluator_version: '0.5.0' }, report, integrity: 'verified_against_saved_report' };
   };
   try {
     const selected: string[] = ['/tmp/pack.json', '/tmp/expectations.json'];
@@ -207,7 +207,7 @@ test('Context receipt audit uses local files, retries idempotently and renders o
     fail = false; await q('context-audit-start').onclick!();
     assert.equal(calls.at(-1)!.options!.body.operation_id, firstOperation);
     assert.match(q('context-audit-status').textContent, /证据不足.*完整性已校验/u);
-    assert.match(q('context-audit-identity').textContent, /^审计 c{12} · 评测器 0\.3\.0/u);
+    assert.match(q('context-audit-identity').textContent, /^审计 c{12} · 评测器 0\.5\.0/u);
     assert.match(q('context-audit-report').children[0].textContent, /引用 2.*Host Token 未记录/u);
     assert.doesNotMatch(JSON.stringify(q('context-audit-report').children), /RAW_SECRET_CONTENT/u);
     assert.equal(q('context-audit-check').disabled, false);

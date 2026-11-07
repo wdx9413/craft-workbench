@@ -1,6 +1,6 @@
 {
   "name": "craft-workbench",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "type": "module",
   "description": "Optional Craft web presentation and Tauri desktop shell",
@@ -16,9 +16,10 @@
     "desktop:build": "pnpm run build:runtime && pnpm --dir desktop run build",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:coverage": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=\"workbench/*.js\" --test-coverage-exclude=\"workbench/app.js\" tests/*.test.ts",
-    "test:coverage:context-audit": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/context-audit-panel.js tests/context-audit-panel.test.ts"
+    "test:coverage:context-audit": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/context-audit-panel.js tests/context-audit-panel.test.ts",
+    "test:coverage:hook-diagnostics": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/hook-diagnostics.js tests/hook-diagnostics.test.ts"
   },
   "dependencies": {
-    "craft": "0.16.0"
+    "craft": "0.18.0"
   }
 }
