@@ -1,0 +1,12 @@
+node_modules/
+.craft_data/
+dist/
+coverage/
+.DS_Store
+desktop/src-tauri/target/
+desktop/src-tauri/resources/app/
+desktop/src-tauri/gen/schemas/
+.env
+.env.*
+# Scratch files used while working in this checkout; never part of a delivery.
+.tmp-*

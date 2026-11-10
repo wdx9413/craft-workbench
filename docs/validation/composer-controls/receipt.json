@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-30T15:13:12.547530+00:00",
+  "scope": "isolated browser UI with source Workbench server and simulated native Codex transport; installed-package static asset and runtime tests run separately",
+  "tests": {
+    "workbench": {
+      "passed": 55,
+      "command": "pnpm test"
+    },
+    "focused": {
+      "passed": 13,
+      "modules": [
+        "composer-controls.js",
+        "evaluation-panel.js"
+      ],
+      "line_percent": 100,
+      "branch_percent": 100,
+      "function_percent": 100
+    }
+  },
+  "browser": {
+    "space_id": 5,
+    "shift_enter": {
+      "value": "键盘验收\n",
+      "submission_count_delta": 0
+    },
+    "enter": {
+      "submission_count_delta": 1,
+      "draft_cleared": true,
+      "task_message_rows": 0
+    },
+    "composition": {
+      "synthetic_events": true,
+      "keydown_prevented": false,
+      "skill_picker_open": false,
+      "submission_count_delta": 0
+    },
+    "desktop_long_draft": {
+      "lines": 35,
+      "client_height": 300,
+      "scroll_height": 808,
+      "viewport_height": 833,
+      "resize": "none",
+      "overflow_y": "auto",
+      "horizontal_overflow": false,
+      "short_draft_height": 88
+    },
+    "window_resize": {
+      "before_height": 231,
+      "narrow_width": 760,
+      "narrow_height": 850,
+      "after_height": 306,
+      "scroll_height": 462,
+      "overflow_y": "auto",
+      "horizontal_overflow": false
+    },
+    "full_permission_selection": {
+      "value": "full",
+      "warning_shown": true,
+      "sent": false
+    },
+    "removing_bare_mention_closes_picker": true,
+    "screenshots": [
+      "desktop.png",
+      "narrow.png"
+    ]
+  },
+  "limitations": [
+    "No real provider model was called by this browser fixture.",
+    "Composition events were synthetic, not an operating-system IME acceptance.",
+    "Native select option changed through selectOption; keyboard popup selection was attempted without a value change and remains unverified.",
+    "Native app automation failed: Sky Computer Use service startup request failed.",
+    "No Tauri native window, system file chooser, Windows or Linux UI acceptance.",
+    "Whole-change coverage and full UI audit remain incomplete.",
+    "Local development runtime archive only; not a release, remote push or installed plugin upgrade."
+  ],
+  "sha256": {
+    "craft-workbench/workbench/composer-controls.js": "0238337ad28354003e1c7d630c373e1b5a9e9e42c6e668a993b05eb97e82ac78",
+    "craft-workbench/workbench/agent-workspace.js": "683a24a621566ff02f604c4e198a38c33dba1a626b569eacfb8279810ee3a0c3",
+    "craft-workbench/workbench/evaluation-panel.js": "fa35f991145080ddcaec4ed8cf8480ed014a44249e6722fd877bbe462ec470a4",
+    "craft-workbench/workbench/app.js": "1ecfb2f3a7103cf7f5fd6c247819f50ec6522bd32b58ca1a58b5071d9a00998f",
+    "craft-workbench/workbench/app.css": "50b3091197f904e5390ea0790a0722a9840b36048bf3b1aad9291e8fb4159787",
+    "craft-workbench/workbench/entry.css": "97dc8beee7aa375cd8b24e3c9179bbeb84fe8a3b597734d31de4cda93070557e",
+    "craft-workbench/tests/composer-controls.test.ts": "ef566c010f0ef0fd4e5fb37ca9b972c059a2875e44579e777230dbdd5899dcac",
+    "craft-workbench/tests/agent-workspace.test.ts": "e4382066303c65c1dc86354c0e8353abf87cad1a34a1c05189e863f3d2c8e001",
+    "craft-workbench/tests/evaluation-panel.test.ts": "ddeda1dd12436aa17c1a3c9bfef4308f4d89252a53a82ccb11451df9c1ea4bde",
+    "craft-workbench/tests/workbench-assets.test.ts": "a673f7c548c5e8d714e8d0569d44fc6049a7da8860a9dc793b45e0c9e1e8b98d",
+    "craft/core/interfaces/workbench-server.ts": "85acd1a7a36aa7cca7872c8466cee86abfe18b92d1ac62cb175f04100998dc65",
+    "craft-workbench/vendor/craft-0.12.131.tgz": "bc78cd10ff2de89288637ace87e20e4acb4133667d756efcfb725b95a399ef70",
+    "craft-workbench/pnpm-lock.yaml": "f65ef138f58fc6ffcf38487b47ddf0f89f0f39f255a299e99efeef2f9947a766"
+  },
+  "cleanup": {
+    "fixture_process_stopped": true,
+    "temporary_data_removed": true,
+    "connection_file_removed": true,
+    "page": "about:blank",
+    "space_retained_for_goal": true
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "polling": {
+    "sameButton": true,
+    "connected": true,
+    "nextRowDisabled": true,
+    "focused": "保留消息"
+  },
+  "escape": {
+    "native_starts": 0,
+    "queued": 2
+  },
+  "narrow": {
+    "width": 780,
+    "height": 820,
+    "horizontalOverflow": false,
+    "focused": "保留消息",
+    "buttonsVisible": true
+  },
+  "discardAndContinue": {
+    "native_starts": 1,
+    "queued": [],
+    "receipts": [
+      {
+        "state": "sent"
+      },
+      {
+        "state": "dismissed",
+        "resolution": "user_discarded_unknown"
+      }
+    ],
+    "task_messages": 0
+  },
+  "completedTurnObserved": true,
+  "finalNativeStarts": 1
+}

@@ -1,0 +1,37 @@
+{
+  "name": "craft-workbench",
+  "version": "0.18.2",
+  "private": true,
+  "type": "module",
+  "description": "Optional Craft web presentation and Tauri desktop shell",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=23"
+  },
+  "scripts": {
+    "build:runtime": "node scripts/run-runtime.mjs check",
+    "start": "node scripts/run-runtime.mjs gui",
+    "serve": "node scripts/run-runtime.mjs serve",
+    "serve:mock": "node scripts/mock-runtime-server.mjs",
+    "start:mock": "node scripts/mock-runtime-server.mjs",
+    "test:mock": "node scripts/mock-runtime-server.mjs --self-test",
+    "desktop:dev": "pnpm run build:runtime && pnpm --dir desktop run dev",
+    "desktop:build": "pnpm run build:runtime && pnpm --dir desktop run build",
+    "test:fixed-version-manager": "node --test tests/fixed-version-manager.test.mjs",
+    "test:coverage:fixed-version-manager": "node --experimental-test-coverage --test-isolation=none --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=desktop/scripts/fixed-version-manager.mjs --test-coverage-include=desktop/scripts/fixed-version-manager-cli.mjs --test tests/fixed-version-manager.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.ts && npm run test:coverage:acceptance-criteria && npm run test:coverage:select-options && npm run test:coverage:folder-tree && npm run test:coverage:lookup && npm run test:coverage:context-audit && npm run test:coverage:task-replan && npm run test:coverage:review-risk && npm run test:coverage:frozen-verification",
+    "test:coverage": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=\"workbench/*.js\" --test-coverage-exclude=\"workbench/app.js\" tests/*.test.ts",
+    "test:coverage:context-audit": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/context-audit-panel.js tests/context-audit-panel.test.ts",
+    "test:coverage:acceptance-criteria": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/acceptance-criteria.js tests/acceptance-criteria.test.ts",
+    "test:coverage:select-options": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/select-options.js tests/select-options.test.ts",
+    "test:coverage:folder-tree": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/folder-tree.js tests/folder-tree.test.ts",
+    "test:coverage:lookup": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/lookup.js tests/lookup.test.ts",
+    "test:coverage:hook-diagnostics": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/hook-diagnostics.js tests/hook-diagnostics.test.ts",
+    "test:coverage:task-replan": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/task-replan-ui.js tests/task-replan-ui.test.ts",
+    "test:coverage:review-risk": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/work-review-risk-ui.js tests/work-review-risk-ui.test.ts",
+    "test:coverage:frozen-verification": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=workbench/work-review-verification-ui.js tests/work-review-verification-ui.test.ts"
+  },
+  "dependencies": {
+    "craft": "link:../craft"
+  }
+}

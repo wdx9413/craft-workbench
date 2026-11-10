@@ -1,0 +1,397 @@
+/* Craft Workbench — Codex-inspired visual layer.
+   Neutral surfaces, quiet icon controls and one compact conversation canvas.
+   Loaded after app.css and overrides only presentation density. All behavior
+   stays in the workbench modules. No CDN, web fonts or remote assets. */
+
+:root {
+  --cw-display: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --cw-mono: "Cascadia Code", "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --cw-sans: "Segoe UI Variable", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  /* Near-white paper, graphite ink and one restrained accent. */
+  --cw-ink: #181a1c;
+  --cw-paper: #f9fafb;
+  --cw-surface: #ffffff;
+  --cw-ember: #1c1d20;
+  --cw-ember-soft: #eceef1;
+  --cw-cyan: #5b6573;
+  --cw-line: rgba(24, 26, 28, .11);
+  /* Instrument colours: one cold signal for machine state, one warm for
+     human attention. Both stay desaturated so status never competes with
+     content, and both are declared for the dark theme as well. */
+  --cw-signal: #2f6f5e;
+  --cw-signal-soft: rgba(47, 111, 94, .12);
+  --cw-warn: #9a6a1c;
+  --cw-warn-soft: rgba(154, 106, 28, .13);
+  --cw-halo: rgba(24, 26, 28, .06);
+  --cw-grid: rgba(24, 26, 28, .035);
+}
+
+html[data-theme="dark"] {
+  --cw-ink: #e8eaed;
+  --cw-paper: #101113;
+  --cw-surface: #17191c;
+  --cw-ember: #f2f3f5;
+  --cw-ember-soft: #292c31;
+  --cw-cyan: #9ca8b8;
+  --cw-line: rgba(232, 234, 237, .13);
+  --cw-signal: #7fc4ae;
+  --cw-signal-soft: rgba(127, 196, 174, .14);
+  --cw-warn: #e0b467;
+  --cw-warn-soft: rgba(224, 180, 103, .16);
+  --cw-halo: rgba(232, 234, 237, .07);
+  --cw-grid: rgba(232, 234, 237, .03);
+}
+
+body {
+  font-family: var(--cw-sans);
+  background:
+    radial-gradient(1100px 620px at 12% -8%, var(--cw-ember-soft) 0%, transparent 62%),
+    radial-gradient(900px 520px at 100% 100%, color-mix(in srgb, var(--cw-cyan) 12%, transparent) 0%, transparent 60%),
+    linear-gradient(var(--cw-grid) 1px, transparent 1px) 0 0 / 100% 32px,
+    linear-gradient(90deg, var(--cw-grid) 1px, transparent 1px) 0 0 / 32px 100%,
+    var(--cw-paper);
+  background-attachment: fixed;
+}
+
+.titlebar, .rail, .aside, .statusbar { background: var(--cw-paper); }
+.main { background: transparent; }
+
+.page-head { padding: 12px 22px 10px; background: transparent; }
+.ph-kicker { display: none; }
+.ph-text h1 {
+  font-family: var(--cw-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  line-height: 26px;
+}
+.card-head h2 { font-family: var(--cw-sans); font-size: 13px; font-weight: 600; }
+.aside-head, .nav-group {
+  font-family: var(--cw-mono);
+  letter-spacing: .04em;
+}
+
+html[data-theme="light"] { --accent: var(--cw-ember); --accent-line: rgba(28, 29, 32, .22); --bg-accent: var(--cw-ember-soft); --link: var(--cw-cyan); }
+html[data-theme="dark"]  { --accent: var(--cw-ember); --accent-line: rgba(242, 243, 245, .25); --bg-accent: var(--cw-ember-soft); --link: var(--cw-cyan); }
+
+@keyframes cw-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.content > .stack > * { animation: cw-rise .28s var(--ease) both; }
+.content > .stack > *:nth-child(2) { animation-delay: .04s; }
+.content > .stack > *:nth-child(3) { animation-delay: .08s; }
+.content > .stack > *:nth-child(4) { animation-delay: .12s; }
+.content > .stack > *:nth-child(n+5) { animation-delay: .16s; }
+
+/* A mode switch swaps the page in place. Replaying the entrance on every card
+   makes that swap read as a reload, so the transition is suppressed once. */
+.app[data-transition="none"] .content > .stack > * { animation: none; }
+
+/* The three modes are recognized by their icon, then only the active one needs
+   a word. This makes the global context visible without turning the title bar
+   into a second navigation product. */
+.mode-btn {
+  width: 34px;
+  height: 28px;
+  justify-content: center;
+  padding: 0;
+  opacity: .68;
+}
+.mode-btn:hover { opacity: 1; }
+.mode-btn[aria-selected="true"] {
+  width: auto;
+  gap: 6px;
+  padding: 0 10px;
+  opacity: 1;
+  background: var(--cw-ember-soft);
+  color: var(--cw-ember);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--cw-ember) 62%, transparent);
+}
+.mode-btn-copy { display: none; align-items: center; }
+.mode-btn[aria-selected="true"] .mode-btn-copy { display: inline-flex; }
+.mode-btn-copy b { font-size: 12px; font-weight: 650; }
+.mode-btn-copy small { display: none; }
+
+/* The active mode is the one piece of global state, so it carries the signal
+   colour and a hairline underline instead of another filled block. */
+.mode-btn[aria-selected="true"] {
+  color: var(--cw-signal);
+  background: var(--cw-signal-soft);
+  box-shadow: inset 0 -2px 0 var(--cw-signal);
+}
+.mode-btn:focus-visible { outline: 2px solid var(--cw-signal); outline-offset: 2px; }
+
+/* Machine state uses one cool signal; human attention uses one warm signal.
+   Both are reinforced by text, never by colour alone. */
+.conn[data-state="ok"] .dot,
+.sb-item[data-state="ok"] .dot { background: var(--cw-signal); }
+.conn[data-state="bad"] .dot,
+.sb-item[data-state="bad"] .dot { background: var(--cw-warn); }
+.callout.warn {
+  border-color: color-mix(in srgb, var(--cw-warn) 42%, transparent);
+  background: var(--cw-warn-soft);
+  color: var(--cw-warn);
+}
+.pill.warn { color: var(--cw-warn); background: var(--cw-warn-soft); }
+.pill.ok { color: var(--cw-signal); background: var(--cw-signal-soft); }
+
+/* Panels read as instruments: a hairline frame plus a soft inner halo rather
+   than a heavy drop shadow. */
+.card,
+.agent-compose,
+.pilot-composer {
+  border-color: var(--cw-line);
+  box-shadow: 0 1px 0 var(--cw-halo);
+}
+.card:hover { border-color: color-mix(in srgb, var(--cw-signal) 26%, var(--cw-line)); }
+
+/* Focus is the one place where the interface is allowed to glow. */
+.btn:focus-visible,
+.nav-item:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--cw-signal);
+  outline-offset: 2px;
+}
+
+/* Chat surfaces should fill the workspace, not behave like another card. */
+.app[data-page="home"] .workspace,
+.app[data-page="pilot"] .workspace { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+.app[data-page="home"] .aside,
+.app[data-page="pilot"] .aside { display: none; }
+.content:has(.home-agent),
+.content:has(.pilot-shell) { padding: 0 28px 24px; }
+.main:has(.home-agent) .page-head,
+.main:has(.pilot-shell) .page-head { display: none; }
+.home-agent .agent-compose > label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+.home-agent .agent-inline-field[hidden] { display: none !important; }
+
+/* Home is a conversation first. Every setup, status and explanation surface is
+   collapsed into the composer command panel until it is actually needed. */
+.home-agent .agent-head,
+.home-agent .agent-providers,
+.home-agent .agent-configuration,
+.home-agent .agent-session,
+.home-agent .agent-console-head,
+.home-agent .agent-note { display: none !important; }
+.home { min-height: 100%; }
+/* The stack is a flex column; the agent section must claim the remaining
+   height itself, otherwise the grid inside collapses to its content and the
+   composer floats in the middle of an empty page. */
+.home-agent { display: flex; flex: 1 1 auto; min-height: 0; flex-direction: column; }
+.home-agent .agent-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: min(100%, 980px);
+  margin-inline: auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "chat" "compose";
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+}
+.home-agent .agent-console {
+  display: flex;
+  min-height: 0;
+  grid-area: chat;
+  flex-direction: column;
+  align-self: stretch;
+  border: 0;
+  background: transparent;
+}
+.home-agent .agent-output {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  padding: 18px 2px;
+  border-radius: var(--r3);
+  background: transparent;
+  color: var(--cw-ink);
+  font-size: 13px;
+}
+.home-agent .agent-output:empty::before {
+  content: "从一个目标开始：先选择项目与工具，再在下面描述你要完成的工作。";
+  display: block;
+  margin-top: 18px;
+  color: color-mix(in srgb, var(--cw-ink) 34%, transparent);
+  font-size: 13px;
+}
+.home-agent .agent-approvals:not(:empty) { margin-bottom: 12px; }
+.home-agent .agent-compose {
+  grid-area: compose;
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  border: 1px solid var(--cw-line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--cw-surface) 97%, transparent);
+  box-shadow: 0 18px 42px -34px rgba(0, 0, 0, .34);
+  backdrop-filter: blur(14px);
+}
+.home-agent .agent-compose > label { display: block; }
+.home-agent .agent-compose textarea {
+  padding: 3px 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cw-ink);
+  font: 14px/1.6 var(--cw-sans);
+}
+.home-agent .agent-compose textarea:focus { outline: none; box-shadow: none; }
+.home-agent .agent-compose-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.home-agent .agent-compose-actions::-webkit-scrollbar { display: none; }
+.home-agent .agent-compose-actions .btn {
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 9px;
+  color: color-mix(in srgb, var(--cw-ink) 72%, transparent);
+  font-size: 12px;
+}
+.home-agent .agent-compose-actions .btn:hover { background: var(--cw-ember-soft); color: var(--cw-ink); }
+.home-agent .agent-compose-actions .btn.primary {
+  width: 30px;
+  min-width: 30px;
+  justify-content: center;
+  padding: 0;
+  background: var(--cw-ember);
+  color: var(--cw-surface);
+}
+.home-agent .agent-inline-field {
+  gap: 2px;
+  padding: 0;
+  background: transparent;
+}
+.home-agent .agent-inline-field span { display: none; }
+.home-agent .agent-inline-field:has([data-field="model"]),
+.home-agent .agent-inline-field:has([data-field="permission"]) { display: none !important; }
+.home-agent .agent-inline-field select {
+  width: auto;
+  min-width: 52px;
+  max-width: 132px;
+  height: 28px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: 12px var(--cw-sans);
+}
+.home-agent .agent-inline-field select:hover { background: var(--cw-ember-soft); }
+.home-agent [data-action="provider-refresh"] {
+  width: 28px;
+  padding: 0;
+  font-size: 0;
+}
+.home-agent .agent-compose-actions .btn,
+.home-agent .agent-inline-field,
+.home-agent .agent-inline-field select { font-size: 12px !important; }
+.home-agent [data-action="provider-refresh"]::after {
+  content: "↻";
+  font-size: 15px;
+}
+.home-agent [data-action="provider-install"][hidden],
+.home-agent [data-action="provider-configure"][hidden] { display: none; }
+.home-agent [data-action="provider-install"],
+.home-agent [data-action="provider-configure"] { height: 28px; padding: 0 8px; font-size: 12px; }
+.home-agent .agent-choose-project {
+  align-self: start;
+  height: 25px;
+  padding: 0 8px;
+  border: 1px solid var(--cw-line);
+  border-radius: 999px;
+  background: var(--cw-surface);
+  color: color-mix(in srgb, var(--cw-ink) 70%, transparent);
+  font-size: 11px;
+}
+.home-agent .agent-turn-user .agent-turn-bubble {
+  background: var(--cw-signal-soft);
+  color: var(--cw-ink);
+}
+.home-agent .agent-turn-assistant .agent-turn-bubble {
+  background: transparent;
+  color: var(--cw-ink);
+}
+
+/* A live session gets one quiet pulse on the send control, so the eye can
+   find "something is running" without a banner. */
+.home-agent [data-action="send-stop"][data-state="stop"] {
+  background: var(--cw-signal);
+  box-shadow: 0 0 0 4px var(--cw-signal-soft);
+}
+@keyframes cw-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--cw-signal-soft); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+.home-agent [data-action="send-stop"][data-state="stop"] { animation: cw-pulse 2.4s var(--ease) infinite; }
+
+/* Pilot gets the same neutral canvas without the workshop's session controls. */
+.pilot-shell { max-width: 980px; }
+.pilot-composer {
+  border-color: var(--cw-line);
+  background: color-mix(in srgb, var(--cw-surface) 97%, transparent);
+}
+.pilot-composer textarea { color: var(--cw-ink); }
+.pilot-inline { color: color-mix(in srgb, var(--cw-ink) 58%, transparent); }
+.pilot-inline { font-size: 0; }
+.pilot-inline select {
+  min-width: 52px;
+  max-width: 86px;
+  padding: 0 18px 0 3px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--cw-ink) 68%, transparent);
+  font: 11px var(--cw-sans);
+  appearance: none;
+}
+.pilot-inline:hover { background: var(--cw-ember-soft); }
+.pilot-inline option { background: var(--cw-surface); color: var(--cw-ink); font-size: 12px; }
+.pilot-settings { padding: 2px; border-radius: 10px; }
+.pilot-send { min-width: 34px; width: 34px; padding: 0; justify-content: center; background: var(--cw-ember); color: var(--cw-surface); font-size: 0; }
+.pilot-send .ic { width: 15px; height: 15px; transform: rotate(-90deg); }
+.pilot-task { border-color: var(--cw-line); background: var(--cw-surface); box-shadow: none; }
+.pilot-mark { background: var(--cw-ember-soft); color: var(--cw-ember); }
+
+/* Responsive: the rail and aside collapse to an overlay-free compact layout on
+   narrow viewports, so the composer stays usable instead of being squeezed. */
+@media (max-width: 900px) {
+  :root { --rail-w: 58px; --aside-w: 0px; }
+  .rail .nav-label, .rail .rb-text, .rail .conn-text, .rail .folder-tree, .rail .nav-count { display: none; }
+  .app[data-rail="open"] .workspace { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+  .app[data-aside="open"] .workspace { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+  .app[data-aside="open"] .aside { display: none; }
+}
+@media (max-width: 680px) {
+  :root { --rail-w: 0px; }
+  .app .workspace { grid-template-columns: minmax(0, 1fr) !important; }
+  .app .rail { display: none; }
+  .page-head { padding: 12px 16px 10px; }
+  .content { padding: 0 16px 18px; }
+  .ph-text h1 { font-size: 21px; }
+  .agent-body { padding: 14px 16px 16px; }
+  .content:has(.home-agent),
+  .content:has(.pilot-shell) { padding-inline: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content > .stack > * { animation: none; }
+  .home-agent [data-action="send-stop"][data-state="stop"] { animation: none; }
+}

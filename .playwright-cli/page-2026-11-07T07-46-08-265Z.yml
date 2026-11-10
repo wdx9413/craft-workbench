@@ -1,0 +1,101 @@
+- generic [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - banner [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - button "展开或收起侧栏" [ref=f1e5] [cursor=pointer]
+        - button "后退" [ref=f1e8] [cursor=pointer]
+        - button "前进" [ref=f1e11] [cursor=pointer]
+        - generic "应用菜单" [ref=f1e15]:
+          - button "文件" [ref=f1e16] [cursor=pointer]
+          - button "编辑" [ref=f1e17] [cursor=pointer]
+          - button "视图" [ref=f1e18] [cursor=pointer]
+          - button "帮助" [ref=f1e19] [cursor=pointer]
+      - tablist "全局模式切换" [ref=f1e20]:
+        - generic [ref=f1e511]:
+          - tab "领航员" [ref=f1e512] [cursor=pointer]
+          - tab "控制台" [ref=f1e515] [cursor=pointer]
+          - tab "工作台" [active] [selected] [ref=f1e519] [cursor=pointer]
+      - button "展开或收起右侧信息" [ref=f1e36] [cursor=pointer]
+    - generic [ref=f1e39]:
+      - complementary "主导航" [ref=f1e40]:
+        - generic [ref=f1e41]:
+          - generic [ref=f1e46]:
+            - generic [ref=f1e47]: Craft Workbench
+            - generic [ref=f1e48]: v0.20.0
+          - button "新建任务" [ref=f1e49] [cursor=pointer]
+          - navigation [ref=f1e53]:
+            - button "任务区" [ref=f1e525] [cursor=pointer]
+            - generic [ref=f1e531]: 能力
+            - button "插件" [ref=f1e532] [cursor=pointer]
+            - button "技能" [ref=f1e537] [cursor=pointer]
+            - button "连接器" [ref=f1e541] [cursor=pointer]
+            - button "模型" [ref=f1e547] [cursor=pointer]
+            - generic [ref=f1e552]: 上下文
+            - button "记忆" [ref=f1e553] [cursor=pointer]
+            - button "知识" [ref=f1e559] [cursor=pointer]
+            - button "经验" [ref=f1e564] [cursor=pointer]
+            - button "认知约束" [ref=f1e569] [cursor=pointer]
+            - button "目录语义" [ref=f1e574] [cursor=pointer]
+            - button "关系健康" [ref=f1e578] [cursor=pointer]
+            - generic [ref=f1e583]: 高级
+            - button "首次引导" [ref=f1e584] [cursor=pointer]
+            - button "切模式确认" [ref=f1e588] [cursor=pointer]
+            - button "设置" [ref=f1e593] [cursor=pointer]
+          - generic [ref=f1e128]:
+            - generic [ref=f1e129]: 任务区 0
+            - generic [ref=f1e130]:
+              - button "全部展开或折叠" [ref=f1e131] [cursor=pointer]
+              - button "按文件夹" [ref=f1e134] [cursor=pointer]
+          - generic [ref=f1e136]:
+            - button "示例工作区 0" [expanded] [ref=f1e137] [cursor=pointer]:
+              - generic [ref=f1e143]: 示例工作区
+              - generic [ref=f1e144]: "0"
+            - generic [ref=f1e145]: 还没有任务
+        - generic [ref=f1e146]:
+          - button "工作会话" [ref=f1e147] [cursor=pointer]
+          - button "设置" [ref=f1e151] [cursor=pointer]
+          - generic [ref=f1e156]: 已连接 · 仅本机
+      - main [ref=f1e159]:
+        - generic [ref=f1e473]:
+          - generic "Mod 与插件配置状态" [ref=f1e474]:
+            - generic [ref=f1e475]: 配置状态（不代表本会话已生效）
+            - generic [ref=f1e476]: 无已启用 Mod
+            - generic [ref=f1e477]: 未选择工作区
+          - region "工作会话" [ref=f1e478]:
+            - generic [ref=f1e479]:
+              - log "会话消息" [ref=f1e481]
+              - generic [ref=f1e482]:
+                - button "选择项目" [ref=f1e483] [cursor=pointer]
+                - generic [ref=f1e486]:
+                  - text: 发送给当前会话
+                  - textbox "发送给当前会话" [ref=f1e487]:
+                    - /placeholder: 输入任务、文件、插件、技能或命令
+                    - text: 保留草稿测试
+                - generic [ref=f1e488]:
+                  - button "更多" [ref=f1e489] [cursor=pointer]: ＋
+                  - generic [ref=f1e490]:
+                    - combobox [ref=f1e491]:
+                      - option "请选择" [selected]
+                      - option "Craft"
+                      - option "Codex CLI"
+                      - option "Claude Code"
+                      - option "DSH"
+                      - option "新增"
+                    - text: ↻
+                  - button "引用文件或文件夹" [ref=f1e492] [cursor=pointer]
+                  - button "发送" [disabled] [ref=f1e495]
+          - group [ref=f1e498]:
+            - generic "原始终端流（命令执行事件，点开查看）" [ref=f1e499] [cursor=pointer]
+    - contentinfo [ref=f1e241]:
+      - button "正在发生 空闲" [ref=f1e242] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f1e243]: ▸
+        - text: 正在发生
+        - generic [ref=f1e244]: 空闲
+      - generic [ref=f1e245]: 已连接
+  - generic [ref=f1e600]:
+    - generic [ref=f1e604]: 外部消息（待办）
+    - generic [ref=f1e605]: 0 条待处理
+    - generic [ref=f1e606]:
+      - textbox "消息源目录" [ref=f1e607]:
+        - /placeholder: 消息源目录（本地/挂载云目录）
+      - button "拉取新消息" [ref=f1e608] [cursor=pointer]

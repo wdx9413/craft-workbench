@@ -1,0 +1,90 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - button "展开或收起侧栏" [ref=e5] [cursor=pointer]
+      - button "后退" [ref=e8] [cursor=pointer]
+      - button "前进" [ref=e11] [cursor=pointer]
+      - generic "应用菜单" [ref=e15]:
+        - button "文件" [ref=e16] [cursor=pointer]
+        - button "编辑" [ref=e17] [cursor=pointer]
+        - button "视图" [ref=e18] [cursor=pointer]
+        - button "帮助" [ref=e19] [cursor=pointer]
+    - tablist "全局模式切换" [ref=e20]:
+      - generic [ref=e108]:
+        - tab "领航员" [ref=e109] [cursor=pointer]
+        - tab "控制台" [ref=e112] [cursor=pointer]
+        - tab "工作台" [active] [selected] [ref=e116] [cursor=pointer]
+    - button "展开或收起右侧信息" [ref=e36] [cursor=pointer]
+  - generic [ref=e39]:
+    - complementary "主导航" [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e46]:
+          - generic [ref=e47]: Craft Workbench
+          - generic [ref=e48]: v0.20.0
+        - button "新建任务" [ref=e122] [cursor=pointer]
+        - navigation [ref=e49]:
+          - button "任务区" [ref=e126] [cursor=pointer]
+          - generic [ref=e132]: 能力
+          - button "插件" [ref=e133] [cursor=pointer]
+          - button "技能" [ref=e138] [cursor=pointer]
+          - button "连接器" [ref=e142] [cursor=pointer]
+          - button "模型" [ref=e148] [cursor=pointer]
+          - generic [ref=e153]: 上下文
+          - button "记忆" [ref=e154] [cursor=pointer]
+          - button "知识" [ref=e160] [cursor=pointer]
+          - button "经验" [ref=e165] [cursor=pointer]
+          - button "认知约束" [ref=e170] [cursor=pointer]
+          - button "目录语义" [ref=e175] [cursor=pointer]
+          - button "关系健康" [ref=e179] [cursor=pointer]
+          - generic [ref=e184]: 高级
+          - button "首次引导" [ref=e185] [cursor=pointer]
+          - button "切模式确认" [ref=e189] [cursor=pointer]
+          - button "设置" [ref=e194] [cursor=pointer]
+        - generic [ref=e200]:
+          - generic [ref=e201]: 任务区 1
+          - generic [ref=e202]:
+            - button "全部展开或折叠" [ref=e203] [cursor=pointer]
+            - button "按文件夹" [ref=e206] [cursor=pointer]
+        - generic [ref=e208]:
+          - button "示例工作区 1" [expanded] [ref=e209] [cursor=pointer]:
+            - generic [ref=e215]: 示例工作区
+            - generic [ref=e216]: "1"
+          - button "隔离运行任务 验证模式切换" [ref=e218] [cursor=pointer]:
+            - generic [ref=e224]:
+              - generic [ref=e225]: 隔离运行任务
+              - generic [ref=e226]: 验证模式切换
+      - generic [ref=e54]:
+        - button "工作会话" [ref=e227] [cursor=pointer]
+        - button "设置" [ref=e55] [cursor=pointer]
+        - generic [ref=e60]: 已连接 · 仅本机
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - heading "我的任务" [level=1] [ref=e66]
+          - paragraph [ref=e67]: 排队、运行、待批准、待输入、完成、失败与未知
+        - button "新建任务" [ref=e69] [cursor=pointer]
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - heading "运行" [level=2] [ref=e77]
+            - paragraph [ref=e78]: 按真实回执与执行状态归组
+          - generic [ref=e79]: "1"
+        - generic [ref=e82]:
+          - generic [ref=e88]:
+            - generic [ref=e89]: 隔离运行任务
+            - generic [ref=e90]: 正在执行 · 工作区 demo
+            - button "上下文使用" [ref=e91] [cursor=pointer]
+          - generic [ref=e92]: 运行
+          - generic [ref=e93]:
+            - button "打开" [ref=e94] [cursor=pointer]
+            - button "新建会话" [ref=e95] [cursor=pointer]
+    - complementary "上下文信息" [ref=e96]:
+      - generic [ref=e98]:
+        - generic [ref=e99]: 任务状态
+        - generic [ref=e101]: 状态来自真实记录：执行中的 Host/原生会话、待批准的控制点、持久队列、失败结果与未知回合。没有信号的任务显示为待输入，而不是被丢弃。
+  - contentinfo [ref=e102]:
+    - button "正在发生 0 个运行中 · 1 个任务进行中" [ref=e103] [cursor=pointer]:
+      - generic [aria-hidden] [ref=e104]: ▸
+      - text: 正在发生
+      - generic [ref=e105]: 0 个运行中 · 1 个任务进行中
+    - generic [ref=e106]: 已连接
