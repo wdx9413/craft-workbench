@@ -158,7 +158,13 @@ function viewPilot() {
       '<section class="pilot-stage" aria-label="领航员会话">' +
       '<div class="pilot-thread" id="pilot-thread" aria-live="polite">' +
       '<div class="pilot-empty"><span class="pilot-mark" aria-hidden="true">' + icon('spark') + '</span>' +
-      '<b>把目标交给领航员</b><span>你不用决定几个任务、谁来做、先做哪一个。领航员会在内部拆解、排队、分派和复查。</span></div></div>' +
+      '<b>把目标交给领航员</b><span>你不用决定几个任务、谁来做、先做哪一个。领航员会在内部拆解、排队、分派和复查。</span>' +
+      '<div class="pilot-samples" role="list" aria-label="示例目标">' +
+      ['审查当前仓库最近的改动并列出风险', '把这次需求拆成可验收的任务', '梳理项目文档并生成一份索引']
+        .map(function (sample) {
+          return '<button class="pilot-sample" type="button" role="listitem" data-pilot-sample="' + esc(sample) + '">' + esc(sample) + '</button>';
+        }).join('') +
+      '</div></div></div>' +
       '<div class="flight-strip" id="flight-strip" aria-label="任务全景进度"></div>' +
       '<div class="flight-drawer" id="flight-drawer" hidden></div>' +
       '<div class="pilot-clarify" id="pilot-clarify" hidden></div>' +
@@ -169,7 +175,7 @@ function viewPilot() {
       '<div class="pilot-composer-bar">' +
       '<button class="btn pilot-plus" type="button" id="pilot-plus" aria-label="设置" title="设置">＋</button>' +
       '<div class="pilot-settings" id="pilot-settings" hidden>' +
-      '<label class="pilot-inline">执行<select id="pilot-provider"><option value="auto">自动选择</option><option value="craft">Craft</option><option value="codex">Codex</option><option value="claude">Claude</option><option value="dsh">DSH</option></select></label>' +
+      '<label class="pilot-inline">执行<select id="pilot-provider"><option value="craft">Craft（固定）</option></select></label>' +
       '<label class="pilot-inline">权限<select id="pilot-permission"><option value="ask">人工审批</option><option value="auto" selected>自动审批</option><option value="full">完整权限</option></select></label></div>' +
       '<span class="grow"></span><button class="btn primary pilot-send" id="pilot-send" type="submit" disabled aria-label="发送" title="发送">' + icon('arrow') + '</button></div>' +
       '</form></section></div>',
@@ -197,7 +203,7 @@ function viewPilot() {
         ? null : document.getElementById('message-dock');
       var dockHome = dock && dock.parentNode;
       if (dock && form.parentNode) form.parentNode.insertBefore(dock, form);
-      var providerNames = { craft: 'Craft', codex: 'Codex', claude: 'Claude', dsh: 'DSH', 'agent-desktop': 'Agent Desktop' };
+      var providerNames = { craft: 'Craft' };
       var queueNames = { queued: '排队中', running: '执行中', completed: '已完成', failed: '执行失败', blocked: '待核对' };
       var workerNames = { started: '正在执行', awaiting_approval: '等待你批准', completed: '执行结束，等待验收', failed: '执行失败', unknown: '执行结果待确认' };
       var reviewNames = { pass: '复查通过', needs_human: '等待你决定', block: '已阻断' };
@@ -213,6 +219,17 @@ function viewPilot() {
         return chosen ? String(chosen.id) : '';
       };
       var syncSend = function () { send.disabled = !String(input.value || '').trim(); };
+      // A first-run user has nothing to type yet; a sample fills the composer
+      // (without sending) so they can edit a real goal instead of a blank box.
+      if (typeof root.querySelectorAll === 'function') {
+        Array.prototype.forEach.call(root.querySelectorAll('[data-pilot-sample]'), function (sample) {
+          sample.onclick = function () {
+            input.value = sample.getAttribute('data-pilot-sample') || '';
+            syncSend();
+            if (typeof input.focus === 'function') input.focus();
+          };
+        });
+      }
       var pollTimer = null;
       var outcomeFor = function (route) {
         var worker = route.worker || {};
@@ -548,11 +565,10 @@ function viewPilot() {
           } }).then(function () { toast('已记录这次交付的采纳结论'); loadStatus(); }).catch(fail);
         }
       };
-      settled(api('/api/workbench/agent-sessions/providers'), { providers: [] }).then(function (catalog) {
-        var available = (catalog.providers || []).filter(function (item) { return item.status === 'available' || item.status === 'plugin'; })
-          .map(function (item) { return String(item.id); });
-        if (configuredCraftModel()) available = available.filter(function (item) { return item !== 'craft'; }).concat('craft');
-        availableExecutors = available.length ? available : ['craft'];
+      settled(api('/api/workbench/agent-sessions/providers'), { providers: [] }).then(function () {
+        // 领航员固定只用 Craft；此处保留读取用于诊断其它模式，
+        // 但绝不把外部 CLI 写回 availableExecutors。
+        availableExecutors = ['craft'];
       });
       if (sessionId) settled(loadStatus(), null).then(function () { if (root.isConnected) syncSend(); });
       else stopPolling();

@@ -9,7 +9,7 @@ import { createContextWorkflowPages } from './context-workflows.js';
 import { createResourcePages } from './resource-pages.js';
 import { createModPages } from './mod-pages.js';
 import { mountMessageDock } from './message-dock.js';
-import { createModelSetup, environmentGuidance } from './model-setup.js';
+import { createModelSetup } from './model-setup.js';
 import { pluginInstallResult } from './plugin-install-result.js';
 import { createLatestRequest, createChangesetPager } from './latest-request.js';
 import { renderChangeSetDetail } from './change-set-view.js';
@@ -29,7 +29,7 @@ import { mountHookDiagnosticsPanel, renderHookDiagnostics } from './hook-diagnos
 import { startToolInstall, describeJob, installOutputText } from './tool-install.js';
 import { bindRecallAudit, bindWeightTrend } from './recall-audit.js';
 import { applyAssetFocus } from './asset-focus.js';
-import { MODES, MODE_ORDER, isMode, shouldOfferOnboarding, modeForLocation, restoreModeForLocation, modeForPage, modeNavKeys, modeRailItems, nextPageForMode, readMode, writeMode, readPilotSession, writePilotSession, legacyNavEnabled } from './mode-shell.js';
+import { MODES, MODE_ORDER, isMode, shouldOfferOnboarding, modeForLocation, restoreModeForLocation, modeForPage, modeNavKeys, modeRailItems, nextPageForMode, writeMode, readPilotSession, writePilotSession, legacyNavEnabled } from './mode-shell.js';
 import { AUTOMATION_VERSION, navigatePage, snapshotSurface } from './automation.js';
 import { renderOptions } from './select-options.js';
 import { taskRowHtml as renderTaskRow, taskListRows as renderTaskListRows, folderGroupHtml as renderFolderGroup } from './folder-tree.js';
@@ -210,6 +210,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
 
   function skeleton() {
     var tiles = [0, 1, 2, 3, 4, 5].map(function () {
+      // impeccable-disable-next-line design-system-radius: 6px is the DESIGN.md micro radius
       return '<div class="stat"><div class="sk-bar" style="width:28px;height:28px;border-radius:6px"></div>' +
         '<div class="stat-body"><div class="sk-bar" style="width:52px;height:17px"></div><div class="sk-bar" style="width:70px;height:11px;margin-top:5px"></div></div></div>';
     }).join('');
@@ -470,7 +471,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
 
   // Settings remains routable, but is deliberately anchored at the rail bottom
   // rather than competing with the everyday working surfaces above.
-  var SETTINGS_PAGE = { key: 'settings', label: '设置', title: '设置', sub: '外观、模型与运行环境', icon: 'sliders', view: viewSettings };
+  var SETTINGS_PAGE = { key: 'settings', label: '设置', title: '设置', sub: '外观、模型与运行环境', icon: 'settings', view: viewSettings };
   var MODEL_SETUP_PAGE = { key: 'model-setup', label: '模型配置', title: '模型配置', sub: '选择服务商、模型并完成连接配置', icon: 'cpu', view: viewModelSetup };
   var ADVANCED_GROUP = '高级';
   var FLAT = NAV.concat([SETTINGS_PAGE]);
@@ -562,6 +563,13 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       });
       try { window.dispatchEvent(new CustomEvent('craft-workbench:surface', { detail: surface })); } catch (_) { /* old WebView */ }
     });
+  }
+  /** Set the rail + status bar connection state from one CONNECTION view, keeping both in sync. */
+  function setConnectionState(view) {
+    $('rail-status').setAttribute('data-state', view.state);
+    $('rail-status').querySelector('.conn-text').textContent = view.rail;
+    $('sb-conn').setAttribute('data-state', view.state);
+    $('sb-conn').lastChild.textContent = view.status;
   }
 
   function installExternalControl() {
@@ -775,8 +783,17 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
   // 模式只改变导航投影，保留当前页面及其草稿和运行状态。
   function setMode(mode) {
     if (!isMode(mode)) return;
+    var previous = state.mode;
     modeSwitchRevision++;
     state.mode = mode;
+    // A mode switch is a deliberate projection change, not a reload: announce
+    // it so the user perceives which surface they are now on.
+    if (previous !== mode && typeof MODES !== 'undefined' && MODES[mode] && typeof toast === 'function') {
+      var label = MODES[mode].label;
+      var announce = $('mode-announce');
+      if (announce && announce.textContent !== undefined) announce.textContent = '已切换到' + label + '模式';
+      toast('已切换到' + label + '模式');
+    }
     // Document pages (task/folder/plugin) stay put; a page that this mode does not
     // show lands on the mode home, so switching never leaves an empty rail.
     var target = nextPageForMode(mode, state.page);
@@ -2429,6 +2446,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
           '<span class="row-title">' + esc(item.name + ' · v' + item.package_version) + '</span>' +
           '<span class="row-sub">' + esc(sub + pagesNote) + '</span></div>' +
           '<div class="row-actions"><button class="btn sm" type="button" data-plugin-detail="' + esc(item.id) + '">详情</button>' +
+          '<button class="btn sm" type="button" data-plugin-resync="' + esc(item.id) + '">重新同步</button>' +
           (pages.length ? '<button class="btn sm" type="button" data-plugin-pages="' + esc(item.id) + '">贡献页面</button>' : '') + '</div>' +
           (pages.length ? '<div class="row-detail" data-plugin-pages-detail="' + esc(item.id) + '"></div>' : '') +
           '<div class="row-actions"><details class="row-confirm"><summary class="btn sm danger">卸载</summary>' +
@@ -2604,16 +2622,43 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
                       };
                       actions.appendChild(open);
                     } else {
-                      var disabled = document.createElement('span');
-                      disabled.className = 'row-sub';
-                      disabled.textContent = '沙箱页面（下一里程碑）';
-                      actions.appendChild(disabled);
+                      var openSandbox = document.createElement('button');
+                      openSandbox.className = 'btn sm'; openSandbox.type = 'button'; openSandbox.textContent = '打开沙箱页面';
+                      openSandbox.onclick = function () {
+                        openSandbox.disabled = true;
+                        api('/api/workbench/plugins/' + encodeURIComponent(pluginId) + '/pages/' + encodeURIComponent(page.id) + workspaceQuery)
+                          .then(function (loaded) {
+                            var sandbox = (loaded && loaded.sandbox) || {};
+                            if (typeof sandbox.html !== 'string') throw new Error('沙箱页面没有可渲染的 HTML');
+                            // 插件 HTML 只在无同源权限的 iframe 中运行；不注入 Craft 页面 DOM。
+                            var frame = document.createElement('iframe');
+                            frame.className = 'plugin-sandbox-frame';
+                            frame.setAttribute('sandbox', 'allow-scripts');
+                            frame.setAttribute('referrerpolicy', 'no-referrer');
+                            frame.srcdoc = sandbox.html;
+                            slot.innerHTML = '';
+                            slot.appendChild(frame);
+                          }).catch(function (error) { openSandbox.disabled = false; fail(error); });
+                      };
+                      actions.appendChild(openSandbox);
                     }
                     item.appendChild(actions);
                     slot.appendChild(item);
                   });
                 })
                 .catch(function (error) { slot.textContent = ''; fail(error); });
+            };
+          });
+          // 宿主清单会演进；重新同步让已安装插件按当前 manifest 刷新页面/技能/Mod。
+          root.querySelectorAll('[data-plugin-resync]').forEach(function (button) {
+            button.onclick = function () {
+              button.disabled = true;
+              api('/api/workbench/plugins/' + encodeURIComponent(button.getAttribute('data-plugin-resync')) + '/resync', { method: 'POST', body: { allow_manifest_change: true } })
+                .then(function (result) {
+                  toast('已同步：页面 ' + String(result.pages || 0) + ' 个，新增 Mod ' + String(result.mods_created || 0) + ' 个');
+                  paint('plugins');
+                })
+                .catch(function (error) { button.disabled = false; fail(error); });
             };
           });
           root.querySelectorAll('[data-adapter-quarantine]').forEach(function (button) {
@@ -3648,6 +3693,16 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
   }
 
   var settingsAdvanced = false;
+  // Settings shell: a left section list + one visible pane. Sections are DOM
+  // panes toggled locally, so switching never refetches or loses unsaved input.
+  var SETTINGS_SECTIONS = [
+    { key: 'general', label: '通用', hint: '外观、署名与用量' },
+    { key: 'models', label: '模型', hint: '服务商、模型与密钥' },
+    { key: 'tools', label: '本机工具', hint: 'Codex / Claude / DSH 路径' },
+    { key: 'context', label: '上下文存储', hint: '记忆 / 知识 / 经验镜像' },
+    { key: 'advanced', label: '高级', hint: '步数、Token 与诊断' }
+  ];
+  var settingsSection = 'general';
 
   function saveSettings() {
     var current = (state.settings && state.settings.runtime) || {};
@@ -3832,25 +3887,33 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       }).join('');
 
       return {
-        html: '<div class="stack">' +
+        actions: [{ label: '返回', icon: 'chev', run: function () { go(MODES[state.mode].home || 'home'); } }],
+        html: '<div class="settings-shell">' +
+          '<nav class="settings-nav" aria-label="设置分区">' + SETTINGS_SECTIONS.map(function (section) {
+            return '<button type="button" class="settings-nav-item" role="tab" aria-selected="' + String(section.key === settingsSection) + '" data-settings-section="' + section.key + '">' +
+              '<span>' + esc(section.label) + '</span><small>' + esc(section.hint) + '</small></button>';
+          }).join('') + '</nav>' +
+          '<div class="settings-pane" id="settings-pane">' +
           '<div class="card runtime-info-card"><div class="card-body"><div class="runtime-info-title">' +
             '<strong>运行环境</strong><span class="pill ' + (runtimeInfo && runtimeInfo.source === 'mock' ? 'warn' : 'ok') + '">' +
             (runtimeInfo && runtimeInfo.source === 'mock' ? 'Mock 演示数据' : runtimeInfo && runtimeInfo.source === 'craft' ? 'Craft 正式 Runtime' : '来源未知') +
             '</span></div><div class="runtime-info-root"><span>数据目录</span><code>' +
             esc(runtimeInfo && runtimeInfo.source === 'mock' ? '演示数据，不连接用户目录' : runtimeInfo && runtimeInfo.dataRoot || settings.dataRoot || '暂不可用') +
             '</code></div></div></div>' +
+          '<div class="settings-section-grid">' +
+          '<section class="settings-section" data-section="models">' +
           '<div class="card">' + head('模型', 'Craft 用一个模型来思考和动手',
             '<button class="btn sm" id="settings-onboarding" type="button">重新打开引导</button>' +
             '<button class="btn sm primary" id="models-manage" type="button">' + icon('plus') + '添加模型</button>') +
-            '<div class="card-body tight"><div class="rows">' + modelRows + '</div></div></div>' +
+            '<div class="card-body tight"><div class="rows">' + modelRows + '</div></div></div></section>' +
+          '<section class="settings-section" data-section="tools">' +
           '<div class="card">' + head('本机工具', 'Craft 直接复用本机已装的 Codex CLI / Claude Code / DSH；这里只登记路径，不复制、不上传任何程序') +
             '<div class="card-body"><div class="rows">' + toolRows + '</div><div class="agent-install-progress" id="tool-install-progress" hidden><span id="tool-install-stage">准备中…</span><div><i id="tool-install-bar"></i></div></div><pre class="agent-install-output" id="tool-install-output" hidden></pre>' + toolsBlock + '</div></div>' +
+            '</section>' +
+          '<section class="settings-section" data-section="context">' +
           '<div class="card">' + head('上下文远端存储', '记忆 / 知识 / 经验默认只存本地；可另外镜像到 Obsidian vault 或任意文件夹，两份各自独立') +
-            '<div class="card-body tight"><div class="rows">' + contextStorageRows + '</div></div></div>' +
-          '<div class="card">' + head('Hook 诊断', '按需读取本机最近记录；只显示阶段和耗时，不读取输入正文',
-            '<button class="btn sm" type="button" data-hook-diagnostics-refresh>读取最近记录</button>') +
-            '<div class="card-body"><p class="hint" role="status" aria-live="polite" data-hook-diagnostics-status>尚未读取。结束记录缺失表示进程仍在运行或被中断，不能单凭此记录断定是 Host 超时。</p>' +
-              '<div data-hook-diagnostics-list>' + renderHookDiagnostics({ items: [], partial: false }) + '</div></div></div>' +
+            '<div class="card-body tight"><div class="rows">' + contextStorageRows + '</div></div></div></section>' +
+          '<section class="settings-section" data-section="general">' +
           '<div class="grid-2">' +
             '<div class="card">' + head('外观与偏好', '浅色为默认；更改会立即预览',
               '<button class="btn primary" id="settings-save" type="button">' + icon('check') + '保存设置</button>') +
@@ -3864,10 +3927,17 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
               '<div class="card-body"><div class="metrics">' + usageTiles + '</div>' + usageNotice + '</div></div>' +
           '</div>' +
           pluginThemeSection +
+          '</section>' +
+          '<section class="settings-section" data-section="advanced">' +
+          '<div class="card">' + head('Hook 诊断', '按需读取本机最近记录；只显示阶段和耗时，不读取输入正文',
+            '<button class="btn sm" type="button" data-hook-diagnostics-refresh>读取最近记录</button>') +
+            '<div class="card-body"><p class="hint" role="status" aria-live="polite" data-hook-diagnostics-status>尚未读取。结束记录缺失表示进程仍在运行或被中断，不能单凭此记录断定是 Host 超时。</p>' +
+              '<div data-hook-diagnostics-list>' + renderHookDiagnostics({ items: [], partial: false }) + '</div></div></div>' +
           '<div class="card">' + head('高级', settingsAdvanced ? '已展开' : '一般不用改',
             '<button class="btn sm" id="adv-toggle" type="button">' + (settingsAdvanced ? '收起' : '展开') + '</button>') +
             '<div class="card-body">' + advanced + '</div></div>' +
-        '</div>',
+          '</section>' +
+          '</div></div></div>',
         aside: asideBlock('这台机器', '', asideRows([
             ['数据目录', settings.dataRoot],
             ['界面语言', settings.locale === 'zh-CN' ? '简体中文' : settings.locale],
@@ -3882,6 +3952,24 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
               : '<div class="aside-note">还没有添加模型。</div>'),
         mounts: [function (root) {
           pagePanels.push(mountHookDiagnosticsPanel(root, { api: api }));
+          // Section switcher: local DOM toggle, so unsaved fields survive a
+          // section change and no request is re-issued.
+          var pane = root.querySelector('#settings-pane');
+          var applySection = function (key) {
+            settingsSection = key;
+            root.querySelectorAll('[data-settings-section]').forEach(function (item) {
+              item.setAttribute('aria-selected', String(item.getAttribute('data-settings-section') === key));
+            });
+            if (pane) {
+              pane.querySelectorAll('[data-section]').forEach(function (section) {
+                section.hidden = section.getAttribute('data-section') !== key;
+              });
+            }
+          };
+          root.querySelectorAll('[data-settings-section]').forEach(function (item) {
+            item.onclick = function () { applySection(item.getAttribute('data-settings-section')); };
+          });
+          applySection(settingsSection);
           root.querySelector('#settings-save').onclick = saveSettings;
           var themeWorkspace = root.querySelector('#plugin-theme-workspace');
           var themeHost = root.querySelector('#plugin-theme-options');
@@ -4020,7 +4108,9 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
   var EXEC_KEY = 'craft.executionMode';
 
   function execLoad() {
-    state.mode = readMode(typeof localStorage === 'undefined' ? null : localStorage);
+    // Opening the Workbench always lands on 领航员. A saved projection is only
+    // restored by an explicit deep link (mode/page in the URL), never silently
+    // on a plain launch, so the default surface is predictable.
     try { var raw = localStorage.getItem(EXEC_KEY); if (raw) state.execution = JSON.parse(raw); } catch (_) { /* storage off */ }
     if (!state.execution || !state.execution.mode) state.execution = { mode: '', provider: null };
   }
@@ -4118,17 +4208,17 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
         (w.preset ? '' : ' disabled') + '>下一步</button></div>';
     } else if (w.step === 2) {
       var suggestions = Array.from(new Set((preset.models || []).concat(w.discoveredModels || [])));
-      html += '<div class="aside-note">模型探测只读取服务商提供的模型列表，不会发送推理请求。密钥从 Craft 配置的环境变量读取，不会传到浏览器。</div>';
+      html += '<div class="aside-note">模型探测只读取服务商提供的模型列表，不会发送推理请求。密钥保存在本机私有密钥库，不写进配置文件，也不会回显。</div>';
       if (w.preset === 'custom') {
         html += '<div class="stack model-provider-fields">' +
           '<div class="field"><label for="w-name">服务商名称</label><input id="w-name" value="' + esc(w.name || '') + '"></div>' +
           '<div class="field"><label for="w-baseurl">API Base URL</label><input id="w-baseurl" type="url" value="' + esc(w.baseUrl || '') + '" placeholder="https://api.example.com/v1"><span class="hint">填写 API 基础地址，通常包含 /v1；不要填 /chat/completions。</span></div>' +
           '<div class="field"><label for="w-protocol">接口协议</label><select id="w-protocol">' + options([['openai-compatible', 'OpenAI 兼容'], ['anthropic', 'Anthropic Messages']], w.protocol) + '</select></div>' +
-          '<div class="field"><label for="w-envname">密钥环境变量名</label><input id="w-envname" value="' + esc(w.env || '') + '"><span class="hint">当前运行的 Craft 进程读取此环境变量；不在 Workbench 中粘贴或保存密钥。</span></div>' +
+          '<div class="field"><label for="w-envname">凭据名（高级）</label><input id="w-envname" value="' + esc(w.env || '') + '"><span class="hint">一般无需修改：密钥按此名字存入本机私有密钥库，仅部署需要覆盖同名系统环境变量时才改。</span></div>' +
           '</div>';
       }
       html += '<div class="model-discovery-row"><button class="btn" type="button" id="w-discover"' + (w.discovery && w.discovery.status === 'loading' ? ' disabled' : '') + '>探测模型</button>' +
-        '<span class="hint">凭据变量：' + esc(w.env || preset.env || '未设置') + '</span></div>';
+        '<span class="hint">凭据由本机私有密钥库提供，无需填写环境变量。</span></div>';
       if (w.discovery) html += '<div class="callout ' + (w.discovery.status === 'ok' || w.discovery.status === 'loading' ? 'info' : 'warn') + '" role="status" aria-live="polite">' + esc(w.discovery.message || '') + '</div>';
       html += '<div class="field"><label for="w-model">用哪个模型</label>' +
         '<input id="w-model" type="text" list="w-model-options" value="' + esc(w.model || suggestions[0] || '') + '" placeholder="模型名称">' +
@@ -4137,7 +4227,6 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       html += '<div class="sheet-actions"><button class="btn" type="button" id="w-prev">上一步</button>' +
         '<button class="btn primary" type="button" id="w-next">下一步</button></div>';
     } else {
-      var guidance = environmentGuidance(w.env || preset.env, navigator.platform || '');
       html += '<div class="aside-list">' +
         wizardRow('服务商', preset.label) +
         wizardRow('模型', w.model) +
@@ -4145,15 +4234,14 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
         '</div>';
       html += '<div class="callout ' + (w.error ? 'warn' : 'info') + '">' + icon('key') + '<span>' +
         (w.error ? esc(w.error) + '。' : '') +
-        'Craft 从<b>系统环境变量</b>里读密钥，不写进配置文件。页面只显示环境变量名，不读取或回显密钥。' +
+        '直接粘贴 API 密钥即可；保存在本机用户目录下的私有文件里（仅本机可读），不会写进配置文件，也不会回显。' +
         '</span></div>';
-      html += '<div class="field"><label for="w-env">把 Key 设置到环境变量</label>' +
-        '<input id="w-env" type="text" value="' + esc(w.env || preset.env) + '" readonly>' +
-        '<span class="hint">' + esc(guidance.message) + '</span></div>';
-      if (guidance.command) html += '<pre class="out" id="w-env-cmd">' + esc(guidance.command) + '</pre>';
-      html += '<div class="sheet-actions">' + (guidance.command ? '<button class="btn" type="button" id="w-copy">' + icon('file') + '复制命令</button>' : '') +
+      html += '<div class="field"><label for="w-apikey">API 密钥</label>' +
+        '<input id="w-apikey" type="password" autocomplete="new-password" spellcheck="false" placeholder="粘贴密钥，例如 sk-..." value="">' +
+        '<span class="hint">留空表示沿用已保存的密钥或同名系统环境变量；填新值会覆盖本机密钥库中的旧值。</span></div>';
+      html += '<div class="sheet-actions">' +
         '<button class="btn primary" type="button" id="w-save">' + icon('check') + (editing ? '保存' : '完成') + '</button></div>';
-      html += '<div class="aside-note">保存会登记模型配置，不会验证服务商连接。设置环境变量并重启 Craft 后，可通过实际任务确认连接。</div>';
+      html += '<div class="aside-note">保存会登记模型配置并写入本机密钥库；是否连通由实际任务验证。</div>';
     }
 
     if (firstRunPending) html += '<button class="btn ghost" type="button" id="w-skip">跳过引导</button>';
@@ -4167,7 +4255,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
         '<div class="field"><label for="w-protocol">接口协议</label><select id="w-protocol">' +
           options([['openai-compatible', '通用（OpenAI 兼容）'], ['anthropic', 'Anthropic']], w.protocol || (preset ? preset.protocol : 'openai-compatible')) +
         '</select></div>' +
-        '<div class="field"><label for="w-envname">密钥所在的环境变量名</label><input id="w-envname" type="text" value="' + esc(w.env || (preset ? preset.env : 'CRAFT_API_KEY')) + '"></div>' +
+        '<div class="field"><label for="w-envname">密钥变量标识</label><input id="w-envname" type="text" value="' + esc(w.env || (preset ? preset.env : 'CRAFT_API_KEY')) + '"><span class="hint">本机密钥库里这个密钥的名字；也可用同名系统环境变量。</span></div>' +
         '</div>';
     }
     html += '</div>';
@@ -4229,19 +4317,18 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     var adv = panel.querySelector('#w-adv');
     if (adv) adv.onclick = function () { readAdvanced(); wizardAdvanced = !wizardAdvanced; rerender(); };
 
-    var copy = panel.querySelector('#w-copy');
-    if (copy) copy.onclick = function () {
-      var text = panel.querySelector('#w-env-cmd').textContent;
-      var done = function () { toast('命令已复制'); };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done, function () { selectAll('w-env-cmd'); });
-      } else selectAll('w-env-cmd');
-    };
-
     var save = panel.querySelector('#w-save');
     if (save) save.onclick = function () {
       readAdvanced();
-      modelSetup.save().then(function (result) {
+      // A pasted key is stored through the owner-only secrets file; an empty
+      // field keeps the existing environment-variable path untouched.
+      var keyField = panel.querySelector('#w-apikey');
+      var pastedKey = keyField && typeof keyField.value === 'string' ? keyField.value.trim() : '';
+      var envName = (modelSetup.view().env) || (preset && preset.env) || '';
+      var storeKey = pastedKey
+        ? api('/api/settings/secrets', { method: 'PUT', body: { env: envName, key: pastedKey } })
+        : Promise.resolve(null);
+      storeKey.then(function () { return modelSetup.save(); }).then(function (result) {
         if (!result.current) return;
         state.execution = { mode: 'provider', provider: result.provider };
         execSave();
@@ -4324,6 +4411,14 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       var railDensity = localStorage.getItem(RAIL_KEY);
       if (railDensity === 'open' || railDensity === 'icons' || railDensity === 'collapsed') $('app').setAttribute('data-rail', railDensity);
     } catch (_) { /* storage off */ }
+    // Keep the toggle affordances honest with the initial (icon-only rail,
+    // collapsed aside) or restored state before the first click.
+    var initialRail = $('app').getAttribute('data-rail') || 'icons';
+    $('rail-toggle').setAttribute('aria-pressed', String(initialRail === 'collapsed'));
+    $('rail-toggle').setAttribute('aria-label', initialRail === 'open' ? '收起为图标栏' : initialRail === 'icons' ? '隐藏图标栏' : '展开侧栏');
+    $('rail-toggle').title = $('rail-toggle').getAttribute('aria-label');
+    var initialAside = $('app').getAttribute('data-aside') || 'collapsed';
+    $('aside-toggle').setAttribute('aria-pressed', String(initialAside === 'collapsed'));
     $('app').setAttribute('data-mode', state.mode);
     $('app').setAttribute('data-craft-page', state.page);
     $('app').setAttribute('data-craft-mode', state.mode);
@@ -4337,11 +4432,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
         content.innerHTML = '<div class="callout warn">' + icon('alert') +
           '<span>' + esc(message || '无法确认 Craft 本地运行时状态。请退出 Workbench 后重新打开；应用不会切换到模拟数据。') + '</span></div>';
       }
-      var failed = CONNECTION.failed;
-      $('rail-status').setAttribute('data-state', failed.state);
-      $('rail-status').querySelector('.conn-text').textContent = failed.rail;
-      $('sb-conn').setAttribute('data-state', failed.state);
-      $('sb-conn').lastChild.textContent = failed.status;
+      setConnectionState(CONNECTION.failed);
       publishControl();
     }
 
@@ -4355,21 +4446,27 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     // "unauthenticated", not "unusable": let the runtime say whether it needs
     // a credential at all before blocking the whole page.
     if (!state.token && !(window.__TAURI__ && window.__TAURI__.core)) {
-      api('/api/workbench/summary').then(function () {
+      var unauthorized = function () {
+        $('content').innerHTML = '<div class="callout warn">' + icon('key') +
+          '<span>这个页面没有访问凭证。请从 Craft Workbench 桌面图标重新打开。</span></div>';
+        setConnectionState(CONNECTION.unauthorized);
+      };
+      var failed = function (message) {
+        $('content').innerHTML = '<div class="callout warn">' + icon('alert') +
+          '<span>' + esc(String(message || '无法连接本地运行时')) + '。</span></div>';
+        setConnectionState(CONNECTION.failed);
+      };
+      // 兜底：探测既未成功也未失败（例如本地运行时无响应 / 网络受限）时，
+      // 不能永远停在"正在加载 Craft 状态…"的 splash，必须给出明确提示。
+      var timeout = new Promise(function (_, reject) { setTimeout(function () { reject(Object.assign(new Error('连接本地运行时超时'), { status: 0 })); }, 4000); });
+      Promise.race([api('/api/workbench/summary'), timeout]).then(function () {
         // The runtime answered without a token: it is reachable and open, so keep
         // booting instead of trapping the page on an unauthorized dead end.
         continueBoot();
       }).catch(function (error) {
         var status = error && error.status;
-        $('content').innerHTML = '<div class="callout warn">' + icon('key') +
-          '<span>' + (status === 401
-            ? '这个页面没有访问凭证。请从 Craft Workbench 桌面图标重新打开。'
-            : '无法连接本地运行时：' + esc(String((error && error.message) || '未知错误')) + '。') + '</span></div>';
-        var view = status === 401 ? CONNECTION.unauthorized : CONNECTION.failed;
-        $('rail-status').setAttribute('data-state', view.state);
-        $('rail-status').querySelector('.conn-text').textContent = view.rail;
-        $('sb-conn').setAttribute('data-state', view.state);
-        $('sb-conn').lastChild.textContent = view.status;
+        if (status === 401) unauthorized();
+        else failed((error && error.message) || '无法连接本地运行时');
       });
       return;
     }
@@ -4471,12 +4568,8 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       api('/api/workbench/summary').then(function (info) {
         connectionAttempts = 0;
         if (connectionTimer != null) { clearTimeout(connectionTimer); connectionTimer = null; }
-        $('brand-version').textContent = 'v' + (info.version || 'dev');
         state.counts = info.counts || {};
-        $('rail-status').setAttribute('data-state', CONNECTION.ok.state);
-        $('rail-status').querySelector('.conn-text').textContent = CONNECTION.ok.rail;
-        $('sb-conn').setAttribute('data-state', CONNECTION.ok.state);
-        $('sb-conn').lastChild.textContent = CONNECTION.ok.status;
+        setConnectionState(CONNECTION.ok);
         $('sb-root').textContent = info.data_root || '—';
         $('sb-counts').textContent = '任务 ' + esc(state.counts.task || 0) + ' · 文件夹 ' + esc(state.counts.project_brain || 0) +
           ' · 能力 ' + esc(state.counts.capability_connector || 0);
@@ -4485,10 +4578,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
         var listCount = $('task-list-count');
         if (listCount && state.counts.task != null) listCount.textContent = String(state.counts.task);
       }).catch(function () {
-        $('rail-status').setAttribute('data-state', CONNECTION.failed.state);
-        $('rail-status').querySelector('.conn-text').textContent = CONNECTION.failed.rail;
-        $('sb-conn').setAttribute('data-state', CONNECTION.failed.state);
-        $('sb-conn').lastChild.textContent = CONNECTION.failed.status;
+        setConnectionState(CONNECTION.failed);
         if (connectionTimer != null) clearTimeout(connectionTimer);
         if (shouldRetryConnection(connectionAttempts)) {
           connectionAttempts += 1;

@@ -10,3 +10,5 @@ desktop/src-tauri/gen/schemas/
 .env.*
 # Scratch files used while working in this checkout; never part of a delivery.
 .tmp-*
+# e2e-scan writes per-run screenshots here; they are evidence for a run, not source.
+scripts/e2e-shots/
