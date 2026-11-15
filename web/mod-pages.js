@@ -38,6 +38,8 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
         (m.evidenceId ? ' · 证据 ' + esc(m.evidenceId) : '') + '</span>';
       if (m.shadowTest !== 'passed') actions += '<button class="btn sm" type="button" data-mod-shadow="' + esc(m.id) + '">跑影子回归</button>';
     }
+    // 插件声明的规则要能看出「来自哪个插件」，否则与自进化规则混在一起无法追责。
+    if (m.pluginId) actions += '<span class="row-sub">来自插件 · ' + esc(m.pluginId) + '（需插件在该工作区启用才注入）</span>';
     if (m.status === 'active') {
       actions += '<button class="btn sm" type="button" data-mod-enable="' + esc(m.id) + '" data-enable="' + m.enabled + '">' + (m.enabled ? '停用' : '启用') + '</button>';
       actions += '<button class="btn sm danger" type="button" data-mod-revoke="' + esc(m.id) + '">撤销</button>';
@@ -174,7 +176,8 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
             '<button class="btn sm" type="button" data-desc-relocate="' + esc(item.id) + '">搬迁</button>' +
             '<button class="btn sm danger" type="button" data-desc-revoke="' + esc(item.id) + '">撤销</button>';
         return '<div class="row"><span class="row-lead muted">' + icon('folder') + '</span><div class="row-main">' +
-          rowTitle(item.path) + '<span class="row-sub">' + esc(item.description || '（暂无描述）') + ' · ' + esc(item.hostKind || 'local') +
+          rowTitle(item.path) + '<span class="row-sub">' + esc(item.description || '（暂无描述）') + ' · 设备 ' + esc(item.deviceId || 'local') + '（' + esc(item.deviceKind || 'local') + '） · ' + esc(item.hostKind || 'local') +
+          (item.repoIdentity && item.repoIdentity.remoteUrl ? ' · 仓库 ' + esc(item.repoIdentity.remoteUrl) : '') +
           ' · 已用 ' + Number(item.useCount || 0) + ' 次 · ' + modStatusLabel(item.status, item.status === 'promoted') +
           (withdrawn ? ' · 撤销后不会因再次使用自动恢复' + (item.revokedReason ? '（' + esc(item.revokedReason) + '）' : '') : '') +
           '</span>' + actions + '</div></div>';
@@ -182,32 +185,38 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
       var form = '<input id="desc-path" placeholder="绝对路径"><input id="desc-desc" placeholder="语义描述">' +
         '<select id="desc-host"><option value="local">本地</option><option value="cloud">云端</option></select>' +
         '<button class="btn primary" id="desc-record" type="button">' + icon('plus') + '记录</button>';
-      var body = '<div class="card-body"><div class="rows">' + (rows || emptyState('还没有目录记录', '先记录一个目录，再反复使用，它会自动提升为正式可召回条目。', 'folder')) + '</div></div>';
+      var body = '<div class="card-body"><div class="rows">' + (rows || emptyState('还没有位置记录', '记录一台设备上的目录；同一路径在不同设备上是两个位置，填写仓库地址才能跨设备召回。', 'folder')) + '</div></div>';
       return {
-        html: '<div class="stack"><div class="card">' + head('目录 ↔ 语义描述', '记录常用目录与它的含义，按语义找目录、按目录找含义；用过才存，常用才转正。', form) + body + '</div></div>',
-        aside: asideBlock('检索', '', '<div class="field"><label>按描述查目录</label><input id="desc-query" placeholder="描述关键词"></div>' +
+        html: '<div class="stack"><div class="card">' + head('设备与位置', '记录“哪台设备上的哪个目录”和它的含义；按语义找位置、按位置找含义。同一路径在不同设备上是两个位置，只有填了仓库地址才会跨设备召回。', form) + body + '</div></div>',
+        aside: asideBlock('检索', '', '<div class="field"><label>按描述查位置</label><input id="desc-query" placeholder="描述关键词"></div>' +
+          '<div class="field"><label>限定设备（可选）</label><input id="desc-query-device" placeholder="laptop / build-01"></div>' +
           '<button class="btn" id="desc-search" type="button">' + icon('search') + '搜索</button>' +
           '<pre id="desc-result" class="out" style="white-space:pre-wrap;margin-top:8px"></pre>' +
-          '<div class="aside-note">只会召回已转正条目；一条目录被使用 3 次后自动转正，或手动提升正式。</div>'),
+          '<div class="aside-note">只会召回已转正条目；一个位置被使用 3 次后自动转正，或手动提升正式。</div>'),
         mounts: [function (root) {
           var recordBtn = root.querySelector('#desc-record');
           if (recordBtn) recordBtn.onclick = function () {
             var path = val('desc-path'), desc = val('desc-desc');
             if (!path || !desc) { toast('路径与描述都必填', true); return; }
             recordBtn.disabled = true;
-            api('/api/workbench/file-dir-desc/record', { method: 'POST', body: { path: path, description: desc, host_kind: val('desc-host') || 'local' } })
-              .then(function () { toast('目录已记录'); paint('filedir'); recordBtn.disabled = false; }).catch(function (e) { recordBtn.disabled = false; fail(e); });
+            var repo = val('desc-repo');
+            api('/api/workbench/file-dir-desc/record', { method: 'POST', body: {
+              device_id: val('desc-device') || 'local', device_kind: val('desc-device-kind') || 'local',
+              path: path, description: desc, host_kind: val('desc-host') || 'local',
+              ...(repo ? { repo_identity: { remote_url: repo } } : {}) } })
+              .then(function () { toast('位置已记录'); paint('filedir'); recordBtn.disabled = false; }).catch(function (e) { recordBtn.disabled = false; fail(e); });
           };
           var searchBtn = root.querySelector('#desc-search');
           if (searchBtn) searchBtn.onclick = function () {
             var query = val('desc-query');
             if (!query) { toast('请输入描述关键词', true); return; }
             searchBtn.disabled = true;
-            api('/api/workbench/file-dir-desc/resolve?description=' + encodeURIComponent(query) + '&limit=10')
+            var device = val('desc-query-device');
+            api('/api/workbench/file-dir-desc/resolve?description=' + encodeURIComponent(query) + '&limit=10' + (device ? '&device_id=' + encodeURIComponent(device) : ''))
               .then(function (res) {
                 var results = (res && res.results) || [];
                 var pre = root.querySelector('#desc-result');
-                if (pre) pre.textContent = results.length ? results.map(function (r) { return '- ' + r.path + ' （' + r.description + '）'; }).join('\n') : '未匹配到已转正的目录';
+                if (pre) pre.textContent = results.length ? results.map(function (r) { return '- [' + (r.deviceId || 'local') + '] ' + r.path + ' （' + r.description + '）'; }).join('\n') : '未匹配到已转正的位置';
                 searchBtn.disabled = false;
               }).catch(function (e) { searchBtn.disabled = false; fail(e); });
           };

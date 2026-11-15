@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createModPages } from '../workbench/mod-pages.js';
+import { createModPages } from '../web/mod-pages.js';
 
 const presentation = {
   icon: (name: string) => `<svg>${name}</svg>`,
@@ -110,9 +110,11 @@ test('shadow-test button runs a real regression instead of claiming a pass', asy
   assert.ok(notifications.some((m) => m.includes('影子回归通过')));
 });
 
-test('file-dir-desc page records a directory and promotes it', async () => {
+test('place registry page records a device-scoped location and promotes it', async () => {
   const calls: Array<{ path: string; body?: unknown }> = [];
-  const data = { items: [{ id: 'd1', path: 'C:\\projects\\billing', description: 'billing service', hostKind: 'local', useCount: 1, status: 'observed' }] };
+  const data = { items: [{ id: 'd1', deviceId: 'build-01', deviceKind: 'ssh', path: 'C:\\projects\\billing',
+    description: 'billing service', hostKind: 'local', repoIdentity: { remoteUrl: 'https://github.com/acme/billing.git', commit: null },
+    useCount: 1, status: 'observed' }] };
   const pages = createModPages({
     api: async (path: string, init?: unknown) => { calls.push({ path, body: init && (init as { body?: unknown }).body }); return data; },
     presentation, notify: () => {}, fail: (e: Error) => { throw e; }, ask: () => null, operator: () => 'op',
@@ -121,6 +123,9 @@ test('file-dir-desc page records a directory and promotes it', async () => {
   const view = await pages.filedir();
   assert.ok(view.html.includes('C:\\projects\\billing'));
   assert.ok(view.html.includes('billing service'));
+  assert.ok(view.html.includes('build-01'), 'the device id is visible on every row');
+  assert.ok(view.html.includes('https://github.com/acme/billing.git'), 'the repository identity is visible when present');
+  assert.ok(view.html.includes('设备与位置'), 'the page names the device-and-place model');
   const promote = button({ 'data-desc-promote': 'd1', getAttribute: (k: string) => (k === 'data-desc-promote' ? 'd1' : null) } as never);
   const nodes = { querySelector: () => null, querySelectorAll: (s: string) => (s === '[data-desc-promote]' ? [promote] : []) };
   view.mounts[0](nodes as never);
