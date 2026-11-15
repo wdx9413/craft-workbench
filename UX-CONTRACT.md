@@ -2,11 +2,11 @@
 
 ## Three-mode navigation (2026-11-09)
 
-The three modes (领航员 / 控制台 / 工作台) are projections of one runtime. A page belongs to exactly one projection (`modeForPage` in `workbench/mode-shell.js`); cross-projection entries must adopt the owning projection before navigating, or the target page renders under the wrong rail.
+The three modes (领航员 / 控制台 / 工作台) are projections of one runtime. A page belongs to exactly one projection (`modeForPage` in `web/mode-shell.js`); cross-projection entries must adopt the owning projection before navigating, or the target page renders under the wrong rail.
 
 | Capability | Canonical owner | Contract |
 | --- | --- | --- |
-| Cross-projection navigation | `workbench/app.js` `adoptModeFor(page)` | Update `state.mode`, `data-mode`, persist via `saveMode()`, repaint the mode switch and re-home the message dock, then a **single** `go(page)`. Never call `setMode()` here: it fires a second navigation to the mode home first |
+| Cross-projection navigation | `web/app.js` `adoptModeFor(page)` | Update `state.mode`, `data-mode`, persist via `saveMode()`, repaint the mode switch and re-home the message dock, then a **single** `go(page)`. Never call `setMode()` here: it fires a second navigation to the mode home first |
 | Overview entries | `data-home-go` binding | 待你批准 / 待裁决对象 / 需确认的订阅 target 控制台 pages; adopt control before `go` |
 | Hatch sheet | `openHatch()` | Adopts 控制台 and opens via `openSheetAfterPaint('objects', render)` — never `openSheet()` before `go()`, which writes into the outgoing DOM |
 | Pending sheet | `paint()` pending consumption | `pending.run($('aside-panel'))` passes the panel node; renders that query it themselves simply ignore the argument |
@@ -23,18 +23,18 @@ This applies to the Codex CLI / Claude Code session composer, separately from th
 | Versioned reconciliation | Craft `workbench-queue-recovery.ts` and authenticated `queue-reconcile` route | Exact task/link/item/version; unknown inspections are read-only; matching native session/submission acknowledgements may settle a queue item without changing native turn state |
 | Local vs native delivery | Craft queue and native submission markers | A local dispatcher receipt is `dispatched`; only an exact native acknowledgement is `accepted`. Neither means the task succeeded |
 | Explicit removal | Same recovery route | An idle session and an uncertain item are required; an abandoned dispatch additionally requires its recorded process to have exited. Missing identity, live/reused PID and inaccessible process remain paused. Manual removal creates `user_discarded_unknown`, never native acceptance; all pending-input revisions are deleted |
-| Inline confirmation | `workbench/queue-recovery.js`, composed by `agent-workspace.js` | Inspect first, explain the consequence, focus “保留消息”, then offer “已核对，移出队列”. No browser dialog or focus trap; Escape retains. Hold the row against polling while the user decides; block duplicate or competing row edits |
+| Inline confirmation | `web/queue-recovery.js`, composed by `agent-workspace.js` | Inspect first, explain the consequence, focus “保留消息”, then offer “已核对，移出队列”. No browser dialog or focus trap; Escape retains. Hold the row against polling while the user decides; block duplicate or competing row edits |
 | Stable queue DOM | Native workspace queue renderer | Preserve identical rows across polling. Invalidate on content/session/turn changes and completion of an edit/recovery; disable competing row controls while a row is held |
 | Recovery across races | Existing native workspace state and operation IDs | Ignore stale session responses; preserve a local recovery affordance if an acknowledgement response is lost after the server removed the input. Never retry native sending. Clear only that queue input's local guard after a matching terminal receipt and an idle native turn |
 | Styling | Existing `app.css` semantic tokens / `entry.css` queue row variant | Compact inline group, wrapped explanation, existing button/focus/danger tokens; no new palette or modal |
 
 Receiving a queue acknowledgement does not end a native turn or release a native writer. A live or unidentifiable dispatcher and a native turn still marked running/unknown require separate native-session investigation. Legacy submission markers lacking exact binding are not upgraded into native acceptance. Automated interaction tests do not establish browser/native visual or cross-platform acceptance.
 
-This document defines intended interaction contracts and their current implementation owners, not completed browser or native-platform acceptance. The unified entry is the primary surface; the existing Workbench remains the advanced management surface. Acceptance evidence and unresolved gaps are tracked in [design QA](design-qa.md) and the [implementation record](../craft/docs/research/desktop-unified-entry-implementation-2026-09-28.md).
+This document defines intended interaction contracts and their current implementation owners, not completed browser or native-platform acceptance. The unified entry is the primary surface; the existing Workbench remains the advanced management surface. Acceptance evidence and unresolved gaps are tracked in [design QA](design-qa.md). The runtime implementation is consumed from the npm `craft` package, not a sibling source checkout.
 
 ## Unified entry (2026-09-28)
 
-User-approved presentation: launcher as entry, companion and artifact workspace in the same implementation. `workbench/entry-session.js` owns transient view state; existing Task/message APIs remain authoritative. `entry-shell.js` is the DOM adapter and `entry-view.js` escapes all external text. Native resize is guarded by the bundled main-window identity and never changes permission.
+User-approved presentation: launcher as entry, companion and artifact workspace in the same implementation. `web/entry-session.js` owns transient view state; existing Task/message APIs remain authoritative. `entry-shell.js` is the DOM adapter and `entry-view.js` escapes all external text. Native resize is guarded by the bundled main-window identity and never changes permission.
 
 | Capability | Canonical owner | Contract |
 | --- | --- | --- |
@@ -63,25 +63,25 @@ The unknown-completion guard currently lasts for the entry session only. Server-
 |---|---|---|---|
 | Runtime vocabulary and lifecycle | `CONTEXT.md` | domain context | 2026-09-17 |
 | Desktop/package boundaries | [Desktop runtime](desktop/src-tauri/src/lib.rs), [sidecar preparation](desktop/scripts/prepare-sidecar.mjs) | implementation contract, native acceptance pending | 2026-09-28 |
-| Model credentials | [settings](../craft/core/settings.ts), [model gateway](../craft/core/model-gateway.ts), [configuration state](workbench/model-setup.js) | security implementation | 2026-09-28 |
-| Browser/Desktop request transport | [runtime client](workbench/runtime-client.js), [native bridge](desktop/src-tauri/src/runtime_bridge.rs), [HTTP interface](../craft/core/interfaces/workbench-server.ts) | source and Node-port tests; native acceptance pending | 2026-09-28 |
+| Model credentials | `craft` package `core/settings.ts`, `core/model-gateway.ts`, [configuration state](web/model-setup.js) | security implementation | 2026-09-28 |
+| Browser/Desktop request transport | [runtime client](web/runtime-client.js), [native bridge](desktop/src-tauri/src/runtime_bridge.rs), `craft` package `core/interfaces/workbench-server.ts` | source and Node-port tests; native acceptance pending | 2026-09-28 |
 
 ## Visual contract
 
 - Project `DESIGN.md`: `DESIGN.md`.
 - Token ownership: existing runtime CSS is canonical.
-- Runtime source: [workbench/app.css](workbench/app.css), served by [core/interfaces/workbench-server.ts](../craft/core/interfaces/workbench-server.ts) when the UI directory is explicitly mounted. Desktop frontend assets come from `build.frontendDist` in [tauri.conf.json](desktop/src-tauri/tauri.conf.json); [sidecar preparation](desktop/scripts/prepare-sidecar.mjs) stages the business runtime, not the UI. `core/workbench-server.ts` is a compatibility re-export, not the implementation owner.
+- Runtime source: [web/app.css](web/app.css), served by the installed `craft` package's `core/interfaces/workbench-server.ts` when the UI directory is explicitly mounted. Desktop frontend assets come from `build.frontendDist` in [tauri.conf.json](desktop/src-tauri/tauri.conf.json); [sidecar preparation](desktop/scripts/prepare-sidecar.mjs) stages the business runtime, not the UI. `core/workbench-server.ts` is a compatibility re-export, not the implementation owner.
 - Themes: light (default), dark and system-following; reduced motion is always respected.
 
 ## Canonical UI Map
 
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
-| Form | Workbench field/form patterns and model setup state | [app.js](workbench/app.js), [model-setup.js](workbench/model-setup.js), [app.css](workbench/app.css) | create / edit | server and state tests; keyboard acceptance pending |
-| Select/Listbox | Native HTML select; Workbench owns options and closed-control styling, OS/browser owns popup | [agent-workspace.js](workbench/agent-workspace.js), [entry.css](workbench/entry.css) | engine / model / permission / work mode | browser option change verified; native popup keyboard acceptance pending |
-| Scrollbar | Global Workbench stylesheet | [app.css](workbench/app.css) | geometry exceptions only | rendered verification pending |
-| Toast | Workbench toast host | [app.js](workbench/app.js) | success / warning / info / error | interaction acceptance pending |
-| CRUD | Workbench HTTP interface, shared browser/Desktop transport | [workbench-server.ts](../craft/core/interfaces/workbench-server.ts), [runtime-client.js](workbench/runtime-client.js) | model create / edit / delete | [HTTP interface tests](../craft/tests/workbench-ui-server.test.ts), [transport tests](tests/workbench-runtime-client.test.ts) |
+| Form | Workbench field/form patterns and model setup state | [app.js](web/app.js), [model-setup.js](web/model-setup.js), [app.css](web/app.css) | create / edit | server and state tests; keyboard acceptance pending |
+| Select/Listbox | Native HTML select; Workbench owns options and closed-control styling, OS/browser owns popup | [agent-workspace.js](web/agent-workspace.js), [entry.css](web/entry.css) | engine / model / permission / work mode | browser option change verified; native popup keyboard acceptance pending |
+| Scrollbar | Global Workbench stylesheet | [app.css](web/app.css) | geometry exceptions only | rendered verification pending |
+| Toast | Workbench toast host | [app.js](web/app.js) | success / warning / info / error | interaction acceptance pending |
+| CRUD | Workbench HTTP interface, shared browser/Desktop transport | [workbench-server.ts](../craft/core/interfaces/workbench-server.ts), [runtime-client.js](web/runtime-client.js) | model create / edit / delete | [HTTP interface tests](../craft/tests/workbench-ui-server.test.ts), [transport tests](tests/workbench-runtime-client.test.ts) |
 | Desktop observation | UIA discovery, then visual/OCR fallback | `adapters/windows-uia.ps1`, `adapters/windows-vision-cli.ts` | semantic / visual fallback | adapter contract tests |
 
 ## Component behavior
@@ -94,19 +94,19 @@ Native session composers use Enter to send through the same action as the send i
 
 | Operation | Trigger | Pending | Success destination | Success feedback | Failure recovery | Focus outcome | Source ref |
 |---|---|---|---|---|---|---|---|
-| Add model | Workbench sheet | Save disabled while request runs | Settings | toast | preserve sheet values | sheet control | [app.js](workbench/app.js), [model-setup.js](workbench/model-setup.js) |
-| Edit model | Settings row | Save disabled while request runs | Settings | toast | preserve sheet values | sheet control | [app.js](workbench/app.js), [model-setup.js](workbench/model-setup.js) |
-| Remove model | App-owned confirmation sheet | confirmation action | Settings | toast | keep confirmation open | cancel action | [app.js](workbench/app.js) |
-| New task (advanced Workbench) | rail action / composer | local form state | task conversation | first model reply, not acceptance | retain input and show error | task composer | [app.js](workbench/app.js) |
-| Continue task (advanced Workbench) | task conversation composer | disable send while model responds | same task thread | append user/model turns | retain input and show error | task composer | [app.js](workbench/app.js) |
-| Install plugin manifest | Plugins page file picker | parse JSON locally, then persist local descriptor | Plugins | toast | preserve file choice and show parse/server error | upload trigger | [app.js](workbench/app.js) |
-| Install local skill | Skills page file picker | read bounded `SKILL.md`, persist inspectable instruction | Skills and task capability picker | toast | preserve file choice and show error | upload trigger | [app.js](workbench/app.js) |
-| Import connector config | Connectors page file picker | parse JSON locally, register as user-approved source | Connectors | toast | preserve file choice and show error | upload trigger | [app.js](workbench/app.js) |
-| Edit memory | Memory inline editor | save a replacement record; do not rewrite prior memory | Memory | toast | retain entered content and show error | inline editor | [app.js](workbench/app.js) |
-| Edit knowledge page | Knowledge inline editor | save a new local Markdown revision | Knowledge | toast | retain entered content and show error | inline editor | [app.js](workbench/app.js) |
-| Edit workflow | Workflow inline editor | save a draft version; no automatic execution | Workflows | toast | retain entered JSON and show error | inline editor | [app.js](workbench/app.js) |
-| In-app webpage | View menu / URL sheet | validate `http(s)` before opening | isolated `embedded` WebView | toast | preserve URL and show error | URL field | `workbench/app.js`, `desktop/src-tauri/src/lib.rs` |
-| Managed browser login | View menu / URL sheet | validate `http(s)` before opening | visible, independent Edge profile | toast, then user completes login | preserve URL and show error | URL field | `workbench/app.js`, `desktop/src-tauri/src/lib.rs`, `adapters/browser-cdp.ts` |
+| Add model | Workbench sheet | Save disabled while request runs | Settings | toast | preserve sheet values | sheet control | [app.js](web/app.js), [model-setup.js](web/model-setup.js) |
+| Edit model | Settings row | Save disabled while request runs | Settings | toast | preserve sheet values | sheet control | [app.js](web/app.js), [model-setup.js](web/model-setup.js) |
+| Remove model | App-owned confirmation sheet | confirmation action | Settings | toast | keep confirmation open | cancel action | [app.js](web/app.js) |
+| New task (advanced Workbench) | rail action / composer | local form state | task conversation | first model reply, not acceptance | retain input and show error | task composer | [app.js](web/app.js) |
+| Continue task (advanced Workbench) | task conversation composer | disable send while model responds | same task thread | append user/model turns | retain input and show error | task composer | [app.js](web/app.js) |
+| Install plugin manifest | Plugins page file picker | parse JSON locally, then persist local descriptor | Plugins | toast | preserve file choice and show parse/server error | upload trigger | [app.js](web/app.js) |
+| Install local skill | Skills page file picker | read bounded `SKILL.md`, persist inspectable instruction | Skills and task capability picker | toast | preserve file choice and show error | upload trigger | [app.js](web/app.js) |
+| Import connector config | Connectors page file picker | parse JSON locally, register as user-approved source | Connectors | toast | preserve file choice and show error | upload trigger | [app.js](web/app.js) |
+| Edit memory | Memory inline editor | save a replacement record; do not rewrite prior memory | Memory | toast | retain entered content and show error | inline editor | [app.js](web/app.js) |
+| Edit knowledge page | Knowledge inline editor | save a new local Markdown revision | Knowledge | toast | retain entered content and show error | inline editor | [app.js](web/app.js) |
+| Edit workflow | Workflow inline editor | save a draft version; no automatic execution | Workflows | toast | retain entered JSON and show error | inline editor | [app.js](web/app.js) |
+| In-app webpage | View menu / URL sheet | validate `http(s)` before opening | isolated `embedded` WebView | toast | preserve URL and show error | URL field | `web/app.js`, `desktop/src-tauri/src/lib.rs` |
+| Managed browser login | View menu / URL sheet | validate `http(s)` before opening | visible, independent Edge profile | toast, then user completes login | preserve URL and show error | URL field | `web/app.js`, `desktop/src-tauri/src/lib.rs`, `adapters/browser-cdp.ts` |
 | Observe self-drawn desktop UI (Windows adapter contract; native acceptance pending) | user selects an already-running application | UIA tree first; bundled local OCR match only when UIA is incomplete | evidence-only visual fallback | show candidate and confidence | no unique/fresh match: recapture or hand off | candidate review | [UIA helper](../craft/adapters/windows-uia.ps1), [vision CLI](../craft/adapters/windows-vision-cli.ts) |
 | Visual desktop click (Windows contract; native acceptance pending) | explicit user release | recapture and require exactly one OCR target | same target window | receipt | reject stale/ambiguous/low-confidence target | Craft approval | [vision kernel](../craft/core/windows-desktop-vision.ts), [vision adapter](../craft/adapters/windows-vision-cli.ts) |
 
@@ -129,8 +129,8 @@ Model identifiers, HTTP(S) endpoints and environment-variable names are validate
 ## Verification
 
 - Static: `git diff --check`, `pnpm run typecheck`, strict design audit.
-- Runtime interfaces: core HTTP tests in `../craft/tests/workbench-ui-server.test.ts` and `../craft/tests/workbench-server.test.ts`, plus local `tests/workbench-runtime-client.test.ts` (loopback tests need local listening permission).
-- Unified-entry state/DOM-port checks: `node --test --experimental-test-coverage --test-coverage-include='workbench/entry-*.js' --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 tests/entry-session.test.ts tests/entry-shell.test.ts`. DOM ports do not replace browser/native acceptance.
+- Runtime interfaces: the installed `craft` package's HTTP interface tests, plus local `tests/workbench-runtime-client.test.ts` (loopback tests need local listening permission).
+- Unified-entry state/DOM-port checks: `node --test --experimental-test-coverage --test-coverage-include='web/entry-*.js' --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 tests/entry-session.test.ts tests/entry-shell.test.ts`. DOM ports do not replace browser/native acceptance.
 - Visual: inspect light/dark, rail collapsed, command palette, model sheet, focused control and narrow viewport in the packaged desktop app.
 
 ## Optional evaluation tool

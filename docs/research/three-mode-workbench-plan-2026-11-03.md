@@ -17,7 +17,7 @@
 
 ## 现状判断
 
-- 当前 Workbench 主界面主要由单体 `workbench/app.js` 驱动，已有 `project-shell.js`、`entry-*` 等历史入口没有接入主启动链路。
+- 当前 Workbench 主界面主要由单体 `web/app.js` 驱动，已有 `project-shell.js`、`entry-*` 等历史入口没有接入主启动链路。
 - 现有 Task 分组逻辑读取 `task.project_id`，但原生会话创建任务时只提交标题、目标、模型和权限，没有提交工作区或项目标识，因此任务落入“默认”分组。
 - 现有插件 manifest 已支持 Skill、MCP、Hook 和界面元数据，但尚未定义插件页面贡献协议。
 - 现有内核已具备并发 DAG、只读 Sub-agent、Expert Profile、审批、队列和恢复原语；缺少的是领航产品层的意图拆分、路由、监督和统一交互。
@@ -126,7 +126,7 @@
         "title": "上下文",
         "icon": "layers",
         "kind": "declarative",
-        "schema": "./workbench/context.page.json",
+        "schema": "./web/context.page.json",
         "requires": ["memory", "knowledge", "experience"]
       }
     ]
@@ -245,4 +245,4 @@
 
 - [Craft Workbench 设计系统](../../DESIGN.md)
 - [Craft Workbench 交互契约](../../UX-CONTRACT.md)
-- [Craft 领域词汇](../../../craft/CONTEXT.md)
+- Craft 领域词汇由已安装的 `craft` 包维护；本仓库不读取兄弟 checkout。

@@ -9,8 +9,6 @@ import { resolveRuntime, prepareSidecar } from '../scripts/runtime-package.mjs';
 
 test('installed runtime resolves without a sibling checkout and prepares the public sidecar', async () => {
   const root = await mkdtemp(join(tmpdir(), 'workbench-package-'));
-  const saved = process.env.CRAFT_RUNTIME_ROOT;
-  delete process.env.CRAFT_RUNTIME_ROOT;
   try {
     await writeFile(join(root, 'package.json'), '{}');
     const directory = join(root, 'node_modules/craft');
@@ -24,14 +22,12 @@ test('installed runtime resolves without a sibling checkout and prepares the pub
     assert.equal(runtime.version, '1.2.3');
     const sidecar = await prepareSidecar(root);
     assert.equal(sidecar.root, root); assert.equal(sidecar.runtime, runtime.directory);
-    assert.equal((await resolveRuntime({ root, sourceRoot: directory })).directory, runtime.directory);
-    await assert.rejects(resolveRuntime({ root, sourceRoot: 'relative' }), /absolute/);
+    assert.equal((await resolveRuntime({ root })).directory, runtime.directory);
     manifest.name = 'wrong'; await save();
     await assert.rejects(resolveRuntime({ root }), /not the Craft/);
     manifest.name = 'craft'; manifest.craftRuntime.protocolVersion = 2; await save();
     await assert.rejects(resolveRuntime({ root }), /incompatible/);
   } finally {
-    if (saved === undefined) delete process.env.CRAFT_RUNTIME_ROOT; else process.env.CRAFT_RUNTIME_ROOT = saved;
     await rm(root, { recursive: true, force: true });
   }
 });
@@ -84,7 +80,7 @@ test('the installed CLI serves recovery assets, reconciles an input and executes
   const require = createRequire(import.meta.url), packagePath = require.resolve('craft/package.json');
   const manifest = JSON.parse(await readFile(packagePath, 'utf8'));
   const cli = join(dirname(packagePath), manifest.bin.craft);
-  const child = spawn(process.execPath, [cli, 'serve', '--port', '0', '--parent-stdin', '--workbench-dir', join(import.meta.dirname, '..', 'workbench')], { env: { ...process.env, CRAFT_DATA_DIR: root }, stdio: ['pipe', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, [cli, 'serve', '--port', '0', '--parent-stdin', '--workbench-dir', join(import.meta.dirname, '..', 'web')], { env: { ...process.env, CRAFT_DATA_DIR: root }, stdio: ['pipe', 'pipe', 'pipe'] });
   const exit = new Promise<void>(resolve => child.once('exit', () => resolve()));
   let deadline: ReturnType<typeof setTimeout> | undefined;
   let ownedAdapter: number | undefined;

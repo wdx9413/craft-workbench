@@ -3,19 +3,11 @@ packages:
 
 # Match the runtime package: optional provider peers are not installed implicitly.
 autoInstallPeers: false
+linkWorkspacePackages: false
+excludeLinksFromLockfile: true
 allowBuilds:
   tesseract.js: false
 
-# Internal versions are fixed by pnpm-lock.yaml and published to the
-# authenticated local registry. Exempt only those exact versions from the
-# default release-age delay; public dependencies retain the delay.
-minimumReleaseAgeExclude:
-  - '@craft/capability-codebase@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0'
-  - '@craft/capability-experience@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0'
-  - '@craft/capability-knowledge@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0'
-  - '@craft/capability-memory@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0'
-  - craft-common-base@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0
-  - craft-common-log@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0
-  - craft-common-store-local@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0
-  - craft-eval@0.3.0 || 0.4.0 || 0.5.0 || 0.6.0 || 0.7.0
-  - craft@0.16.0 || 0.17.0 || 0.18.0 || 0.19.0 || 0.20.0
+# Runtime packages are consumed by exact npm versions; no source checkout or
+# local link is recorded in the lockfile.
+minimumReleaseAgeExclude: []

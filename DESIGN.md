@@ -7,20 +7,36 @@ colors:
   chrome: "rgb(249, 250, 251)"
   ink: "rgb(15, 17, 21)"
   muted: "rgb(97, 102, 107)"
+  muted-strong: "rgb(110, 116, 126)"
   brand: "#B08A4E"
   link: "rgb(65, 118, 230)"
   success: "rgb(34, 197, 94)"
   warning: "rgb(221, 134, 41)"
   danger: "rgb(236, 19, 19)"
+  accent-soft: "rgb(236, 238, 241)"
+  shade-12: "rgba(0, 0, 0, .12)"
+  shade-28: "rgba(0, 0, 0, .28)"
+  shade-34: "rgba(0, 0, 0, .34)"
+  shade-35: "rgba(0, 0, 0, .35)"
+  shade-50: "rgba(0, 0, 0, .50)"
+  shade-55: "rgba(0, 0, 0, .55)"
+  ink-line: "rgba(28, 29, 32, .22)"
 typography:
   sans:
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif'
   mono:
     fontFamily: '"SF Mono", "JetBrains Mono", "Fira Code", Consolas, "Liberation Mono", Menlo, Courier, monospace'
 rounded:
+  hairline: "4px"
   micro: "6px"
   control: "8px"
+  control-sm: "9px"
+  row: "10px"
   surface: "12px"
+  card: "13px"
+  surface-sm: "14px"
+  panel: "16px"
+  button: "18px"
   menu: "20px"
   composer: "22px"
   pill: "999px"
@@ -53,7 +69,7 @@ DeepSeek Harness supplies the visual grammar: quiet blue-neutral surfaces, hairl
 - **Memorable signature:** One task changes scale: lightweight entry, selected material beside a draft, then a focused artifact workspace. These are presentation modes, not separate agents.
 - **Restraint:** Tables, forms, activity and destructive actions use familiar product controls; no visual treatment may obscure execution state.
 - **Anti-references:** Marketing gradients, oversized rounded cards and saturated blue-as-brand treatments are deliberately excluded.
-- **Token ownership/runtime mapping:** [workbench/app.css](workbench/app.css) is canonical (Model B). The frontmatter mirrors `--bg*`, `--text*`, `--accent`, `--r*`, `--hair`, `--shadow*` and scrollbar tokens. `app.css` is served unchanged by [core/interfaces/workbench-server.ts](../craft/core/interfaces/workbench-server.ts); `core/workbench-server.ts` is only a compatibility re-export. Tauri bundles the same Workbench separately; the core sidecar is prepared through [desktop/scripts/prepare-sidecar.mjs](desktop/scripts/prepare-sidecar.mjs).
+- **Token ownership/runtime mapping:** [web/app.css](web/app.css) is canonical (Model B). The frontmatter mirrors `--bg*`, `--text*`, `--accent`, `--r*`, `--hair`, `--shadow*` and scrollbar tokens. `app.css` is served unchanged by the installed `craft` package's `core/interfaces/workbench-server.ts`; `core/workbench-server.ts` is only a compatibility re-export. Tauri bundles the same Workbench separately; the core sidecar is prepared through [desktop/scripts/prepare-sidecar.mjs](desktop/scripts/prepare-sidecar.mjs).
 
 ## Colors
 
@@ -67,7 +83,7 @@ The system sans stack prioritizes native rendering and CJK coverage. Interface t
 
 The shell owns the viewport and uses a 40px title bar, 24px status bar, 232px rail and 280px contextual aside. The title bar contains only rail/navigation controls and File/Edit/View/Help; the browser app host retains actual window controls. Both rail and contextual aside can collapse without changing content semantics. Each scrollable panel owns its overflow; loading and feedback preserve the surrounding geometry.
 
-The preceding geometry describes the advanced Workbench shell (232px rail, 280px aside) used by all three modes. The official entry is the three-mode shell implemented in `workbench/mode-shell.js` + `workbench/app.js` (领航员 / 控制台 / 工作台), which shares one Craft Runtime over Task, Approval, Evidence and session state. Switching modes never interrupts a task and never changes execution facts (`NEEDREAD.md` §2). The earlier `workbench/entry.css` launcher / companion / artifact-workspace proposal (approved 2026-09-28) is **superseded** by the three-mode entry and is no longer a delivery target; `entry.css` is retained only as a historical style artifact and must not be wired into the startup chain. Model, plugin and capability management remain accessible from each mode's own nav.
+The preceding geometry describes the advanced Workbench shell (232px rail, 280px aside) used by all three modes. The official entry is the three-mode shell implemented in `web/mode-shell.js` + `web/app.js` (领航员 / 控制台 / 工作台), which shares one Craft Runtime over Task, Approval, Evidence and session state. Switching modes never interrupts a task and never changes execution facts (`NEEDREAD.md` §2). The earlier `web/entry.css` launcher / companion / artifact-workspace proposal (approved 2026-09-28) is **superseded** by the three-mode entry and is no longer a delivery target; `entry.css` is retained only as a historical style artifact and must not be wired into the startup chain. Model, plugin and capability management remain accessible from each mode's own nav.
 
 The three-mode entry supersedes the 2026-09-28 launcher proposal. Visual QA and native platform acceptance are still pending; see `design-qa.md`.
 

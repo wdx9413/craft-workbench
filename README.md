@@ -31,18 +31,11 @@ pnpm desktop:dev
 pnpm desktop:build
 ```
 
-集成开发工作区通过 `link:../craft` 使用同级 Craft 仓库；克隆本仓库时需在同一父目录放置 Craft，并先构建 Craft。Workbench 当前版本为 `0.18.2`，运行时源码版本为 Craft `0.20.3`。桌面 sidecar 会从该 Runtime 生成到 `dist/runtime/app`，安装包内包含运行时及依赖。独立工作区安装需要先发布对应 Craft 包及其内部依赖到可访问的包仓库。
+Workbench 通过 npm 版本依赖使用 Craft 运行时（当前固定为 `craft@0.20.4`），不再读取同级 `../craft` 仓库。桌面 sidecar 会从已安装的 Runtime 生成到 `dist/runtime/app`，安装包内包含运行时及其依赖。独立工作区安装需要对应 Craft 包及其内部依赖已发布到可访问的包仓库。
 
-## 显式源码联调
+## Runtime 来源
 
-需要调试未打包的核心时，先在核心仓库完成构建，再为命令设置绝对路径 `CRAFT_RUNTIME_ROOT`。例如：
-
-```sh
-CRAFT_RUNTIME_ROOT=/absolute/path/to/craft pnpm serve
-CRAFT_RUNTIME_ROOT=/absolute/path/to/craft pnpm desktop:dev
-```
-
-此选择不会自动修改锁文件，也不会自动构建核心源码。Runtime 必须声明支持的协议版本，否则启动前报错。
+Workbench 只读取 npm 安装的 `craft` 包，不再支持指向同级源码仓库的覆盖变量。Runtime 必须声明支持的协议版本，否则启动前报错。
 
 ## 测试与发布边界
 
