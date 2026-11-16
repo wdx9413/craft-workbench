@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderReviewVerifications, mountReviewVerifications } from '../workbench/work-review-verification-ui.js';
+import { renderReviewVerifications, mountReviewVerifications } from '../web/work-review-verification-ui.js';
 const ui = { esc: (value: unknown) => String(value).replaceAll('<', '&lt;'), operatorOf: () => 'reviewer', taskCard: (...v: string[]) => v.join('|') };
 const candidate = { id: '<candidate>', version: 1, actor: 'worker', verification_configuration: { image: '<pinned-image>', argv: ['check'], profile_id: 'profile', profile_version: 2, allow_simulated: true } };
 test('frozen verifier cards distinguish simulation, incomplete cleanup and independent roles', () => {

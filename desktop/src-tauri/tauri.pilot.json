@@ -1,0 +1,10 @@
+{
+  "productName": "Craft Pilot",
+  "identifier": "dev.craft.pilot",
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self' http://127.0.0.1:*; connect-src 'self' ipc: http://ipc.localhost http://127.0.0.1:*; img-src 'self' data: http://127.0.0.1:*; style-src 'self' 'unsafe-inline' http://127.0.0.1:*; script-src 'self' http://127.0.0.1:*"
+    }
+  }
+}

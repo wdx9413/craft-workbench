@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cancelToolInstall, describeJob, installOutputText, startToolInstall, waitForJob } from '../workbench/tool-install.js';
+import { cancelToolInstall, describeJob, installOutputText, startToolInstall, waitForJob } from '../web/tool-install.js';
 
 const job = (over: Record<string, unknown> = {}) => ({
   id: 'install_1', provider: 'codex', label: 'Codex CLI', state: 'running', stage: 'install',

@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   AUTOMATION_VERSION, CONTROL_ENV, CONTROL_PATH, controlEnabled, isControlOrigin,
   navigateMode, navigatePage, snapshotSurface,
-} from '../workbench/automation.js';
+} from '../web/automation.js';
 
 class TestLocation {
   hash: string;

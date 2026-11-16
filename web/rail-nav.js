@@ -32,7 +32,8 @@ export function railNavHtml(options) {
   }
   if (advanced.length) {
     const open = advancedRailOpen(advanced, current, showAdvanced);
-    html += '<button class="nav-more" type="button" data-nav-more aria-expanded="' + open + '">' +
+    // 图标栏模式会隐藏文字标签，所以按钮必须自带名称，否则读屏只剩一个「▸」。
+    html += '<button class="nav-more" type="button" data-nav-more aria-expanded="' + open + '" aria-label="高级工具" title="高级工具">' +
       icon('chev') + '<span class="nav-label">高级工具</span></button>';
     if (open) html += advanced.map(entry).join('');
   }

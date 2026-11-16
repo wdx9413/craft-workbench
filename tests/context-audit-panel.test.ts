@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mountContextAuditPanel } from '../workbench/context-audit-panel.js';
+import { mountContextAuditPanel } from '../web/context-audit-panel.js';
 
 class Element {
   value = ''; textContent = ''; innerHTML = ''; disabled = false; hidden = false;

@@ -388,11 +388,43 @@ pub fn run() {
                 }
             };
             app.manage(RuntimeState { child: Mutex::new(child), backend: Mutex::new(backend), startup_error });
-            WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-                .title("Craft")
+            // Opt-in CDP for automated acceptance. A release launch opens no
+            // debugging port; only CRAFT_WORKBENCH_DEVTOOLS=1 exposes one on
+            // loopback so Playwright/agent-desktop can drive the shipped build.
+            let debug_args = if std::env::var("CRAFT_WORKBENCH_DEVTOOLS").as_deref() == Ok("1") {
+                "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1"
+            } else {
+                ""
+            };
+            // Each single-surface flavor names itself through tauri.<mode>.json's
+            // productName; the shared shell reads the same value for its title and
+            // pins its projection via an inline boot script.
+            let product = app.config().product_name.clone().unwrap_or_else(|| "Craft Workbench".into());
+            // Flavor identity comes from the identifier (ASCII-safe for WiX) while
+            // the window keeps the human product name.
+            let identifier = app.config().identifier.clone();
+            let mode_only = if identifier.ends_with(".pilot") { "pilot" }
+                else if identifier.ends_with(".control") { "control" }
+                else if identifier.ends_with(".workshop") { "workshop" }
+                else { "" };
+            // Bundled name stays ASCII (WiX-safe); the window title is the
+            // user-facing Chinese label for the same surface.
+            let window_title = match mode_only {
+                "pilot" => "Craft 领航员",
+                "control" => "Craft 控制台",
+                "workshop" => "Craft 工作台",
+                _ => product.as_str(),
+            };
+            // The literal comes from a fixed match above; no JSON escaping needed.
+            let mut window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
+                .title(window_title)
                 .inner_size(1200.0, 800.0)
                 .min_inner_size(380.0, 400.0)
-                .build()?;
+                .initialization_script(&format!("window.CRAFT_MODE_ONLY=\"{mode_only}\";"));
+            if !debug_args.is_empty() {
+                window = window.additional_browser_args(debug_args);
+            }
+            window.build()?;
             let shortcut = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Space);
             // Another Craft window (or another app) may already own this hotkey. A busy
             // global shortcut must not stop the window from opening, so registration is

@@ -112,7 +112,7 @@ test('an executor template never renders a literal undefined for a missing permi
 });
 
 test('the executor page itself falls back instead of printing undefined', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   assert.match(app, /item\.permission \|\| '未指定'/u);
 });
 
@@ -184,7 +184,7 @@ test('a composed decision answers with a rendered control, not an unknown form',
 test('the decision page never crashes when a composed answer omits its measurement', async () => {
   // app.js guards the "too big to scan" note with a fallback so a shape that
   // omits `measurement` renders "未知" instead of throwing.
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   assert.match(app, /\(composed\.measurement \|\| \{\}\)\.estimated_lines \?\? '未知'/u);
 });
 

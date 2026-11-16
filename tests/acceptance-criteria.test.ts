@@ -1,7 +1,7 @@
 // V1.4 · incremental coverage gate for the module extracted out of app.js.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseCriteria, CRITERION_WORDS } from '../workbench/acceptance-criteria.js';
+import { parseCriteria, CRITERION_WORDS } from '../web/acceptance-criteria.js';
 
 test('CRITERION_WORDS maps Chinese and enum words to runtime kinds', () => {
   assert.equal(CRITERION_WORDS['文件'], 'file');

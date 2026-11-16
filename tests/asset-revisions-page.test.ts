@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 // @ts-expect-error Browser module exercised directly.
-import { createAssetRevisionPage } from "../workbench/asset-revisions.js";
+import { createAssetRevisionPage } from "../web/asset-revisions.js";
 const esc = (v: unknown) => String(v).replaceAll('<', '&lt;');
 function screen() {
   const elements = new Map<string, any>();

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mountMessageDock } from '../workbench/message-dock.js';
+import { mountMessageDock } from '../web/message-dock.js';
 
 // A tiny DOM stand-in: enough to prove rendering and zero-inference display.
 function fakeDom() {

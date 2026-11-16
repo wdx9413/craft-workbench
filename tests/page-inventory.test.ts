@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MODES, restoreModeForLocation } from '../workbench/mode-shell.js';
+import { MODES, restoreModeForLocation } from '../web/mode-shell.js';
 import { createMockServer } from '../scripts/mock-runtime-server.mjs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -99,7 +99,7 @@ test('task and folder deep links keep their identity parameters', async () => {
     // writes page=task&task=<id>, and hashchange must restore the selection.
     const task = await fetch(`${base}/index.html#page=task&task=t-1`);
     assert.equal(task.status, 200);
-    const app = await readFile(resolve('workbench/app.js'), 'utf8');
+    const app = await readFile(resolve('web/app.js'), 'utf8');
     assert.match(app, /page=task&task=' \+ encodeURIComponent\(taskId\)/u);
     assert.match(app, /state\.page = params\.get\('page'\) \|\| state\.page/u);
     assert.match(app, /state\.selectedTask = params\.get\('task'\) \|\| null/u);
@@ -109,7 +109,7 @@ test('task and folder deep links keep their identity parameters', async () => {
 });
 
 test('browser back to an old deep link restores the active shell and target identity', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   const body = app.split("window.addEventListener('hashchange', function () {")[1]!.split('\n  });')[0]!;
   const handler = new Function('state', 'location', 'knownPage', 'restoreModeForLocation', 'localStorage', '$', 'paintModeSwitch', 'taskTitleOf', 'paint',
     `let navigationRevision = 0; const URLSearchParams = globalThis.URLSearchParams; ${body}`);
@@ -142,20 +142,20 @@ test('browser back to an old deep link restores the active shell and target iden
 });
 
 test('hash navigation handler never sends or restarts a task', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   const body = app.split("window.addEventListener('hashchange', function () {")[1]!.split('\n  });')[0]!;
   assert.doesNotMatch(body, /api\(|dispatch|resume|retry|permission_mode|grant/u);
 });
 
 test('the task detail back entry follows the current mode instead of hard-coding the workshop', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   // Console's task board owns "我的任务": opening a task from there must return
   // to the board, not be teleported to the workshop home.
   assert.match(app, /label: '回到任务', icon: 'tasks', run: function \(\) \{ go\(state\.mode === 'control' \? 'tasks'/u);
 });
 
 test('the overview entries adopt the owning projection before navigating', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   // Overview is a workshop page whose targets (approvals/objects/subscriptions)
   // belong to the control projection: navigating without switching would leave a
   // control page under a workshop rail.
@@ -168,7 +168,7 @@ test('the overview entries adopt the owning projection before navigating', async
 });
 
 test('every overview target is owned by a known mode', async () => {
-  const { MODES: modes, modeForPage: owner } = await import('../workbench/mode-shell.js');
+  const { MODES: modes, modeForPage: owner } = await import('../web/mode-shell.js');
   for (const target of ['approvals', 'objects', 'subscriptions']) {
     const mode = owner(target);
     assert.ok(mode, `${target} must belong to a projection`);
@@ -177,14 +177,14 @@ test('every overview target is owned by a known mode', async () => {
 });
 
 test('cross-projection entries share one mode-adoption helper', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   assert.match(app, /function adoptModeFor\(page\)/u);
   // The overview entries and the hatch sheet both cross into the control plane.
   assert.ok((app.match(/adoptModeFor\(/gu) ?? []).length >= 3, 'both entries call the helper');
 });
 
 test('the hatch sheet opens after the page paints and receives its panel', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   // Writing the sheet before go() lands in the outgoing DOM; the pending sheet
   // must run after paint, and it must receive the panel node.
   assert.match(app, /openSheetAfterPaint\('objects', function \(panel\)/u);
@@ -192,7 +192,7 @@ test('the hatch sheet opens after the page paints and receives its panel', async
 });
 
 test('the task detail new-task entry keeps the control projection', async () => {
-  const app = await readFile(resolve('workbench/app.js'), 'utf8');
+  const app = await readFile(resolve('web/app.js'), 'utf8');
   // A task opened from the console must not be teleported to the workshop home
   // when the user presses 新建任务: the drawer opens on the task board.
   assert.match(app, /if \(state\.mode === 'control'\) \{ adoptModeFor\('tasks'\); openInlineOn\('tasks', newSessionDrawer/u);

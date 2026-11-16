@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { runDesktopStartupGate } from '../workbench/runtime-startup.js';
+import { runDesktopStartupGate } from '../web/runtime-startup.js';
 
 test('a browser without the desktop bridge continues into its selected runtime', () => {
   let continued = 0;
@@ -32,4 +32,17 @@ test('an unavailable startup-state command fails closed with generic guidance', 
     () => calls.push('continue'), (message) => calls.push(message));
   assert.deepEqual(calls, [undefined]);
   assert.equal(result, false);
+});
+
+test('a hung desktop IPC still boots the shell instead of leaving controls unbound', async () => {
+  const calls: unknown[] = [];
+  const started = Date.now();
+  const result = await runDesktopStartupGate(
+    () => new Promise(() => {}),
+    () => calls.push('continue'),
+    (message) => calls.push(message),
+  );
+  assert.deepEqual(calls, ['continue']);
+  assert.equal(result, true);
+  assert.ok(Date.now() - started >= 2900, 'the timeout path was exercised');
 });

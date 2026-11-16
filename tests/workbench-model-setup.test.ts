@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser JavaScript is tested directly without generated declarations.
-import { createModelSetup, environmentGuidance } from '../workbench/model-setup.js';
+import { createModelSetup, environmentGuidance } from '../web/model-setup.js';
 
 test('model pricing saves explicitly and is cleared when its destination changes', async () => {
   const price = { version: 'v1', input_usd_per_million: 1, output_usd_per_million: 2 };

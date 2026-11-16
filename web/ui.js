@@ -218,4 +218,36 @@ function asideRows(pairs) {
   }).join('') + '</div>';
 }
 
-export { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStatusLabel, effectPill, settled, receiptName, head, emptyState, statTile, lead, countChip, asideBlock, asideRows, $, val, checked, lines, ICONS, TONE, STATUS_LABELS, EFFECT_LABELS, HEALTH_LABELS, ASSET_TYPE_LABELS, STAGE_LABELS, TRACE_LABELS, TASK_PERMISSION_LABELS, CONFIDENCE_LABELS, ARTIFACT_KIND_LABELS, RECEIPT_ACTION_LABELS, ESCAPES };
+/**
+ * Internal failures reach the UI as English kernel sentences. A person who
+ * cannot read them learns nothing about what to do next, so the known ones
+ * are translated here. An unknown message is still shown verbatim: a missing
+ * translation must never hide the reason a task failed.
+ */
+var FAILURE_TEXT = [
+  ['task has no workspace; choose a project before dispatch', '还没有选择工作目录。先在任务区选一个项目，再重新派发。'],
+  ['no workspace', '还没有选择工作目录。先在任务区选一个项目，再重新派发。'],
+  ['has no credential', '模型还没有可用密钥。先到「设置 → 模型」配置密钥。'],
+  ['credential is missing', '模型还没有可用密钥。先到「设置 → 模型」配置密钥。'],
+  ['permission denied', '权限不足：请在设置里放宽权限，或由你确认这一步。'],
+  ['approval', '这一步需要你确认后才继续。'],
+  ['timed out', '执行超时了。可以重试，或检查目标是否过大。'],
+  ['timeout', '执行超时了。可以重试，或检查目标是否过大。'],
+  ['rate limit', '服务商限流了，稍后再试。'],
+  ['connection refused', '连不上模型服务，请检查网络或服务地址。'],
+  ['fetch failed', '连不上模型服务，请检查网络或服务地址。'],
+  ['not configured', '还有配置没完成，先到「设置」补齐再试。'],
+  ['not initialized', 'Craft 还没初始化，先运行一次引导。'],
+];
+
+function failureText(message) {
+  var raw = String(message == null ? '' : message);
+  if (!raw) return '';
+  var lower = raw.toLowerCase();
+  for (var index = 0; index < FAILURE_TEXT.length; index += 1) {
+    if (lower.indexOf(FAILURE_TEXT[index][0]) !== -1) return FAILURE_TEXT[index][1];
+  }
+  return raw;
+}
+
+export { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStatusLabel, effectPill, settled, receiptName, head, emptyState, statTile, lead, countChip, asideBlock, asideRows, failureText, $, val, checked, lines, ICONS, TONE, STATUS_LABELS, EFFECT_LABELS, HEALTH_LABELS, ASSET_TYPE_LABELS, STAGE_LABELS, TRACE_LABELS, TASK_PERMISSION_LABELS, CONFIDENCE_LABELS, ARTIFACT_KIND_LABELS, RECEIPT_ACTION_LABELS, ESCAPES };

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser module tested with a small DOM port.
-import { appendNativeOutput, claudeToolEvent, codexToolEvent, createNativeTranscript, formatNativeHistory, mountAgentWorkspace, nativeHistoryMessages } from '../workbench/agent-workspace.js';
+import { appendNativeOutput, claudeToolEvent, codexToolEvent, createNativeTranscript, formatNativeHistory, mountAgentWorkspace, nativeHistoryMessages } from '../web/agent-workspace.js';
 
 const settle = async () => { for (let i = 0; i < 10; i++) await new Promise(resolve => setImmediate(resolve)); };
 

@@ -48,8 +48,6 @@ body {
   background:
     radial-gradient(1100px 620px at 12% -8%, var(--cw-ember-soft) 0%, transparent 62%),
     radial-gradient(900px 520px at 100% 100%, color-mix(in srgb, var(--cw-cyan) 12%, transparent) 0%, transparent 60%),
-    linear-gradient(var(--cw-grid) 1px, transparent 1px) 0 0 / 100% 32px,
-    linear-gradient(90deg, var(--cw-grid) 1px, transparent 1px) 0 0 / 32px 100%,
     var(--cw-paper);
   background-attachment: fixed;
 }
@@ -214,13 +212,20 @@ textarea:focus-visible {
   background: transparent;
   color: var(--cw-ink);
   font-size: 13px;
+  /* The empty state is centred by the flex container; once a conversation
+     exists the messages flow normally from the top. */
+  display: flex;
+  flex-direction: column;
 }
 .home-agent .agent-output:empty::before {
   content: "从一个目标开始：先选择项目与工具，再在下面描述你要完成的工作。";
   display: block;
-  margin-top: 18px;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 24px 0;
+  text-align: center;
   color: color-mix(in srgb, var(--cw-ink) 34%, transparent);
-  font-size: 13px;
+  font-size: 14px;
 }
 .home-agent .agent-approvals:not(:empty) { margin-bottom: 12px; }
 .home-agent .agent-compose {
@@ -374,7 +379,7 @@ textarea:focus-visible {
    narrow viewports, so the composer stays usable instead of being squeezed. */
 @media (max-width: 900px) {
   :root { --rail-w: 58px; --aside-w: 0px; }
-  .rail .nav-label, .rail .rb-text, .rail .conn-text, .rail .folder-tree, .rail .nav-count { display: none; }
+  .rail .nav-label, .rail .conn-text, .rail .folder-tree, .rail .nav-count { display: none; }
   .app[data-rail="open"] .workspace { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
   .app[data-aside="open"] .workspace { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
   .app[data-aside="open"] .aside { display: none; }

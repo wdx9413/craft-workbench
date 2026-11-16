@@ -3,7 +3,7 @@
 // pure rendering contract so it can be verified without a DOM.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderOptions } from '../workbench/select-options.js';
+import { renderOptions } from '../web/select-options.js';
 
 const esc = (value) => String(value ?? '')
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');

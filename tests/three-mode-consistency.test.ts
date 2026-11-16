@@ -7,7 +7,7 @@
 // in-memory mock runtime.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createModePages } from '../workbench/mode-pages.js';
+import { createModePages } from '../web/mode-pages.js';
 import { createMockRuntime, mockContext, assertCalled } from './helpers/mock-runtime.js';
 
 // --- V2: a task dispatched by 领航员 is the same shared record the 控制台 reads,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { advancedRailOpen, railNavHtml, splitRail } from '../workbench/rail-nav.js';
+import { advancedRailOpen, railNavHtml, splitRail } from '../web/rail-nav.js';
 
 const items = [
   { key: 'overview', group: '工作', label: '概要', icon: 'inbox' },

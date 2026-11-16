@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { bindRecallAudit } from '../workbench/recall-audit.js';
+import { bindRecallAudit } from '../web/recall-audit.js';
 
 function flush() { return new Promise<void>((resolve) => setTimeout(resolve, 0)); }
 
@@ -35,7 +35,7 @@ test('recall audit binds once, toggles without refetching, and passes member plu
   assert.equal(list.hidden, false);
 });
 test('weight trend binds once and renders the running weight with counted flags', async () => {
-  const { bindWeightTrend } = await import('../workbench/recall-audit.js');
+  const { bindWeightTrend } = await import('../web/recall-audit.js');
   const calls: string[] = [];
   const api = async (path: string) => { calls.push(path); return {
     member: 'knowledge', asset_id: 'claim-1', current_weight: 1,
@@ -72,7 +72,7 @@ test('weight trend binds once and renders the running weight with counted flags'
   assert.equal(calls.length, 0);
 });
 test('weight trend with no counted event explains how the first one is produced', async () => {
-  const { bindWeightTrend } = await import('../workbench/recall-audit.js');
+  const { bindWeightTrend } = await import('../web/recall-audit.js');
   const api = async () => ({ member: 'memory', asset_id: 'm1', current_weight: 1,
     counts: { positive: 0, negative: 0, dismissed: 0, events: 0 }, points: [], timeline: [] });
   const list = { hidden: true, textContent: '', innerHTML: '' };
@@ -91,7 +91,7 @@ test('weight trend with no counted event explains how the first one is produced'
   assert.doesNotMatch(list.innerHTML, /<svg/u);
 });
 test('a long flat weight curve collapses to its step points instead of a dense polyline', async () => {
-  const { bindWeightTrend } = await import('../workbench/recall-audit.js');
+  const { bindWeightTrend } = await import('../web/recall-audit.js');
   const points = [];
   for (let i = 0; i < 100; i += 1) points.push({ at: 't' + i, weight: 1 });
   for (let i = 0; i < 100; i += 1) points.push({ at: 'u' + i, weight: 1.2 });
@@ -114,7 +114,7 @@ test('a long flat weight curve collapses to its step points instead of a dense p
   assert.match(coordinates[1]!, /^236\.0,/u);
 });
 test('weight trend adds per-day rollup only when the history spans more than one day', async () => {
-  const { bindWeightTrend } = await import('../workbench/recall-audit.js');
+  const { bindWeightTrend } = await import('../web/recall-audit.js');
   const render = async (daily: unknown[], points: unknown[]) => {
     const api = async () => ({ member: 'experience', asset_id: 'p1', current_weight: 1,
       counts: { positive: 1, negative: 1, dismissed: 0, events: 2 }, points, daily, timeline: [] });
@@ -140,7 +140,7 @@ test('weight trend adds per-day rollup only when the history spans more than one
   assert.doesNotMatch(singleDay, /按天/u);
 });
 test('a correction line names who settled it and why once it is adjudicated', async () => {
-  const { bindWeightTrend } = await import('../workbench/recall-audit.js');
+  const { bindWeightTrend } = await import('../web/recall-audit.js');
   const api = async () => ({ member: 'experience', asset_id: 'p1', current_weight: 1,
     counts: { positive: 0, negative: 1, dismissed: 0, events: 2 },
     points: [{ at: 't1', weight: 1 }, { at: 't2', weight: 1 }],

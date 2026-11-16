@@ -29,13 +29,13 @@ import { mountHookDiagnosticsPanel, renderHookDiagnostics } from './hook-diagnos
 import { startToolInstall, describeJob, installOutputText } from './tool-install.js';
 import { bindRecallAudit, bindWeightTrend } from './recall-audit.js';
 import { applyAssetFocus } from './asset-focus.js';
-import { MODES, MODE_ORDER, isMode, shouldOfferOnboarding, modeForLocation, restoreModeForLocation, modeForPage, modeNavKeys, modeRailItems, nextPageForMode, writeMode, readPilotSession, writePilotSession, legacyNavEnabled } from './mode-shell.js';
+import { MODES, MODE_ORDER, isMode, readModeOnly, shouldOfferOnboarding, modeForLocation, restoreModeForLocation, modeForPage, modeNavKeys, modeRailItems, nextPageForMode, writeMode, readPilotSession, writePilotSession, legacyNavEnabled } from './mode-shell.js';
 import { AUTOMATION_VERSION, navigatePage, snapshotSurface } from './automation.js';
 import { renderOptions } from './select-options.js';
 import { taskRowHtml as renderTaskRow, taskListRows as renderTaskListRows, folderGroupHtml as renderFolderGroup } from './folder-tree.js';
 import { operatorOf as lookupOperator, taskTitleOf as lookupTaskTitle, capNameOf as lookupCapName } from './lookup.js';
-import { createModePages } from './mode-pages.js';
-import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStatusLabel, effectPill, settled, receiptName, head, emptyState, statTile, lead, countChip, asideBlock, asideRows, $, val, checked, lines, ICONS, TONE, STATUS_LABELS, EFFECT_LABELS, HEALTH_LABELS, ASSET_TYPE_LABELS, STAGE_LABELS, TRACE_LABELS, TASK_PERMISSION_LABELS, CONFIDENCE_LABELS, ARTIFACT_KIND_LABELS, RECEIPT_ACTION_LABELS, ESCAPES } from './ui.js';
+import { createNewSessionDrawer } from './session-form.js';
+import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStatusLabel, effectPill, settled, receiptName, head, emptyState, statTile, lead, countChip, asideBlock, asideRows, failureText, $, val, checked, lines, ICONS, TONE, STATUS_LABELS, EFFECT_LABELS, HEALTH_LABELS, ASSET_TYPE_LABELS, STAGE_LABELS, TRACE_LABELS, TASK_PERMISSION_LABELS, CONFIDENCE_LABELS, ARTIFACT_KIND_LABELS, RECEIPT_ACTION_LABELS, ESCAPES } from './ui.js';
 
 /* Craft Workbench — desktop shell for the Craft runtime.
    Layout borrows from the VS Code family (fixed viewport, activity rail,
@@ -75,8 +75,9 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     // 开发兜底开关：#...&legacyNav=1 恢复旧的完整一级导航，仅用于对齐期，不是第二套界面。
     legacyNav: false,
     // 三模式（工作台 / 控制台 / 领航员）是同一 Runtime 的展示投影；切换模式不中断任务，
-    // 也不改变执行事实。首次进入领航员，之后恢复上次使用的模式。
-    mode: 'pilot', pilotSessionId: readPilotSession(typeof localStorage === 'undefined' ? null : localStorage),
+    // 也不改变执行事实。首次进入领航员，之后恢复上次使用的模式。单模式桌面应用
+    // （领航员 / 控制台 / 工作台独立发行）在这里被钉死到自己的投影。
+    mode: readModeOnly() || 'pilot', pilotSessionId: readPilotSession(typeof localStorage === 'undefined' ? null : localStorage),
     runtimeFailed: false
   };
 
@@ -225,11 +226,13 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     fetch: window.fetch.bind(window), token: function () { return state.token; }
   });
 
-  // The three-mode pages are a deep module: presentation in mode-pages.js,
-  // runtime facts and navigation arrive through this one narrow context.
+  // Each mode page is its own module and is fetched only when that projection
+  // is first painted. A pilot-only build therefore never downloads the control
+  // board, and a workshop build never downloads the pilot conversation.
+  // Runtime facts and navigation arrive through one narrow context object.
   // Function declarations below are hoisted, so wiring here (before NAV is
   // built) is safe.
-  var modePages = createModePages({
+  var pageContext = {
     state: state, api: api, host: window, doc: document,
     toast: toast, fail: fail, go: go, openTask: openTask,
     importNativeSession: importNativeSession, mountAgentWorkspace: mountAgentWorkspace,
@@ -237,10 +240,31 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     workspacePathOf: workspacePathOf, folderNameOf: folderNameOf, renderFolderTree: renderFolderTree,
     asideBlock: asideBlock, openInlineOn: openInlineOn, dismissInline: dismissInline,
     settled: settled, icon: icon, esc: esc, label: label, pill: pill, head: head,
-    emptyState: emptyState, countChip: countChip
-  });
-  var viewHome = modePages.viewHome, viewPilot = modePages.viewPilot,
-      viewMyTasks = modePages.viewMyTasks, newSessionDrawer = modePages.newSessionDrawer;
+    emptyState: emptyState, countChip: countChip, failureText: failureText
+  };
+  var newSessionDrawer = createNewSessionDrawer(pageContext);
+  var modePageLoaders = {
+    workshop: function () { return import('./workshop-page.js').then(function (m) { return m.createWorkshopPage(pageContext); }); },
+    control: function () { return import('./control-page.js').then(function (m) { return m.createControlPage(pageContext); }); },
+    pilot: function () { return import('./pilot-page.js').then(function (m) { return m.createPilotPage(pageContext); }); }
+  };
+  var modePageCache = {};
+  function loadModePage(mode) {
+    var loader = modePageLoaders[mode];
+    if (!loader) return Promise.reject(new Error('未知模式：' + mode));
+    if (!modePageCache[mode]) {
+      modePageCache[mode] = loader().catch(function (error) {
+        delete modePageCache[mode];
+        throw error;
+      });
+    }
+    return modePageCache[mode];
+  }
+  // View adapters keep NAV/definition synchronous while the module itself is
+  // fetched on first paint of the owning mode.
+  function viewHome() { return loadModePage('workshop').then(function (page) { return page.viewHome(); }); }
+  function viewMyTasks() { return loadModePage('control').then(function (page) { return page.viewMyTasks(); }); }
+  function viewPilot() { return loadModePage('pilot').then(function (page) { return page.viewPilot(); }); }
 
   function readUpload(input, accepted, callback) {
     var file = input && input.files && input.files[0];
@@ -738,9 +762,53 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
   }
 
   // 全局模式切换：领航员 / 控制台 / 工作台。切换只换导航与展示投影，不中断任务、不改权限。
+  /**
+   * The icon rail hides every text label to stay narrow. Native `title` takes
+   * about a second and cannot be styled; this shows the same label immediately
+   * in a page-level chip, because .rail-scroll would clip an in-rail tooltip.
+   * Only active in icon mode — the other densities already show the labels.
+   */
+  function installRailTips() {
+    var rail = $('rail');
+    var tip = $('rail-tip');
+    if (!rail || !tip) return;
+    var hide = function () { tip.hidden = true; };
+    var show = function (event) {
+      if ($('app').getAttribute('data-rail') !== 'icons') { hide(); return; }
+      var target = event.target.closest && event.target.closest('[aria-label]');
+      if (!target || !rail.contains(target)) { hide(); return; }
+      var rect = target.getBoundingClientRect();
+      tip.textContent = target.getAttribute('aria-label');
+      tip.hidden = false;
+      var top = Math.min(Math.max(8, rect.top + rect.height / 2 - tip.offsetHeight / 2), window.innerHeight - tip.offsetHeight - 8);
+      tip.style.left = Math.round(rect.right + 8) + 'px';
+      tip.style.top = Math.round(top) + 'px';
+    };
+    rail.addEventListener('mouseover', show);
+    rail.addEventListener('focusin', show);
+    rail.addEventListener('mouseleave', hide);
+    rail.addEventListener('focusout', hide);
+    window.addEventListener('blur', hide);
+  }
+
   function paintModeSwitch() {
     var host = $('mode-switch');
     if (!host) return;
+    var modeLabel = $('page-mode');
+    var current = MODES[state.mode] || MODES.pilot;
+    if (modeLabel) {
+      // In a single-surface build the app itself is the mode, so repeating the
+      // mode name next to every page title is noise. The switcher (multi-mode
+      // build) already shows the active projection.
+      modeLabel.hidden = Boolean(state.modeOnly);
+      modeLabel.textContent = current.label;
+      modeLabel.setAttribute('data-mode', state.mode);
+      modeLabel.setAttribute('data-craft-mode', state.mode);
+      modeLabel.title = current.sub;
+    }
+    // Single-surface desktop builds have exactly one projection: the switcher
+    // would advertise surfaces this app does not contain, so it stays hidden.
+    if (state.modeOnly) { host.hidden = true; host.innerHTML = ''; return; }
     // Build the three tabs once. A switch must not recreate the buttons: replacing
     // their DOM drops focus and reads as a page reload even though nothing reloads.
     if (!host.firstElementChild) {
@@ -763,14 +831,6 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       btn.setAttribute('aria-selected', String(active));
       btn.classList.toggle('active', active);
     });
-    var modeLabel = $('page-mode');
-    var current = MODES[state.mode] || MODES.pilot;
-    if (modeLabel) {
-      modeLabel.textContent = current.label;
-      modeLabel.setAttribute('data-mode', state.mode);
-      modeLabel.setAttribute('data-craft-mode', state.mode);
-      modeLabel.title = current.sub;
-    }
     publishControl();
   }
 
@@ -783,6 +843,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
   // 模式只改变导航投影，保留当前页面及其草稿和运行状态。
   function setMode(mode) {
     if (!isMode(mode)) return;
+    if (state.modeOnly && mode !== state.modeOnly) return;
     var previous = state.mode;
     modeSwitchRevision++;
     state.mode = mode;
@@ -4115,6 +4176,15 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     if (!state.execution || !state.execution.mode) state.execution = { mode: '', provider: null };
   }
 
+  /** Single-surface build marker; '' means the full multi-mode workbench. */
+  function loadModeOnly() {
+    state.modeOnly = readModeOnly();
+    if (state.modeOnly) {
+      state.mode = state.modeOnly;
+      writeMode(typeof localStorage === 'undefined' ? null : localStorage, state.modeOnly);
+    }
+  }
+
   function saveMode() {
     writeMode(typeof localStorage === 'undefined' ? null : localStorage, state.mode);
   }
@@ -4396,6 +4466,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     state.selectedPlugin = params.get('plugin') || null;
     state.legacyNav = params.get('legacyNav') === '1';
     state.focus = params.get('focus') || null;
+    loadModeOnly();
     execLoad();
     revalidatePluginTheme();
     state.page = params.get('page') || MODES[state.mode].home;
@@ -4483,6 +4554,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
 
     $('jump-new-task').onclick = function () { openNewTaskForMode(); };
     $('settings-nav').onclick = function () { go('settings'); };
+    installRailTips();
     $('nav-back').onclick = function () { history.back(); };
     $('nav-forward').onclick = function () { history.forward(); };
     $('aside-toggle').onclick = function () {
@@ -4595,10 +4667,15 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
       // 展开才有细节；把过程摆在中央等于把监工合法化，所以这一行是它唯一的固定位置。
       var summary = home.summary || {};
       var activeRuns = Number(summary.active_runs || 0);
-      var activeTasks = Number(summary.active_tasks || 0);
+      var awaitingUser = Number(summary.awaiting_user || 0);
       var live = $('sb-live');
-      if (activeRuns || activeTasks) {
-        live.textContent = activeRuns + ' 个运行中 · ' + activeTasks + ' 个任务进行中';
+      // 只说正在发生的事：一个长期停在 active 的历史任务并没有在跑，把它算进
+      // 「任务进行中」会让这一行永远显示忙碌，用户也永远等不到结果。
+      if (activeRuns) {
+        live.textContent = activeRuns + ' 个运行中';
+        live.setAttribute('data-state', 'busy');
+      } else if (awaitingUser) {
+        live.textContent = awaitingUser + ' 个待你处理';
         live.setAttribute('data-state', 'busy');
       } else {
         live.textContent = '空闲';
@@ -4656,7 +4733,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     state.token = params.get('token') || state.token;
     state.page = params.get('page') || state.page;
     if (!knownPage(state.page)) state.page = 'home';
-    state.mode = restoreModeForLocation(state.page, params.get('mode'), state.mode, localStorage);
+    state.mode = state.modeOnly || restoreModeForLocation(state.page, params.get('mode'), state.mode, localStorage);
     $('app').setAttribute('data-mode', state.mode);
     $('app').setAttribute('data-craft-mode', state.mode);
     state.selectedTask = params.get('task') || null;

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const workbenchDir = resolve(root, 'workbench');
+const workbenchDir = resolve(root, 'web');
 
 function createState() {
   return {

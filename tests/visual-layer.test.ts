@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 
-const root = path.resolve(import.meta.dirname, '..', 'workbench');
+const root = path.resolve(import.meta.dirname, '..', 'web');
 const read = (name: string) => readFile(path.join(root, name), 'utf8');
 
 test('unavailable usage renders unknown values instead of zero consumption', async () => {
@@ -89,9 +89,17 @@ test('the visual layer defines its typography, palette, atmosphere and motion', 
 test('app.js imports the extracted deep modules instead of duplicating them', async () => {
   const app = await read('app.js');
   assert.match(app, /from '\.\/ui\.js'/u);
-  assert.match(app, /from '\.\/mode-pages\.js'/u);
+  // Each mode page is a separate lazy module, so a single-surface build never
+  // downloads the other two projections.
+  assert.match(app, /from '\.\/session-form\.js'/u);
+  for (const file of ['workshop-page.js', 'control-page.js', 'pilot-page.js']) {
+    assert.match(app, new RegExp(`import\\('\\./${file.replace('.', '\\.')}'\\)`, 'u'), `${file} is lazy-loaded`);
+  }
+  assert.doesNotMatch(app, /from '\.\/mode-pages\.js'/u);
   assert.doesNotMatch(app, /^  var ICONS = \{/mu);
-  assert.doesNotMatch(app, /^  function viewHome\(/mu);
+  // app.js keeps only a one-line adapter; the view body lives in its mode module.
+  assert.match(app, /function viewHome\(\) \{ return loadModePage\('workshop'\)/u);
+  assert.doesNotMatch(app, /pilot-shell|task-board\?limit=50/u);
 });
 
 test('commands and mentions use separate surfaces, with a visible mode chip', async () => {
@@ -128,7 +136,7 @@ test('tool install and lazy Craft model loading stay wired into the home compose
   const composer = await read('agent-workspace.js');
   // A built-in Craft option plus a catalog Craft entry must not duplicate.
   assert.match(composer, /hasStaticCraft/u);
-  const pages = await read('mode-pages.js');
+  const pages = await read('session-form.js');
   // The new-session form must fetch configured models when opened cold.
   assert.match(pages, /loadCraftModels/u);
 });
@@ -268,7 +276,7 @@ test('new-session permission default comes from the persisted workbench settings
 });
 
 test('task acceptance controls submit versioned rechecks and human evidence with recovery on errors', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   for (const kind of ['review', 'recheck']) {
     const marker = kind === 'review' ? '[data-review-plan]' : '[data-recheck-plan]';
     const next = kind === 'review' ? '[data-recheck-plan]' : '[data-retry-task-run]';
@@ -299,7 +307,7 @@ test('task acceptance controls submit versioned rechecks and human evidence with
 });
 
 test('task verdict presents the current acceptance round instead of an old passed outcome', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var verdictCard;');
   const end = source.indexOf('      var artifactRows', start);
   const rendered = runInNewContext(source.slice(start, end) + ';verdictCard', {
@@ -320,7 +328,7 @@ test('task verdict presents the current acceptance round instead of an old passe
 });
 
 test('acceptance provenance distinguishes file receipts and historical missing evidence', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var verdictCard;');
   const end = source.indexOf('      var artifactRows', start);
   for (const receipt of [null, { sha256: 'filehash', size_bytes: 0 }, { sha256: 'legacyhash' }]) {
@@ -339,7 +347,7 @@ test('acceptance provenance distinguishes file receipts and historical missing e
 
 
 test('task view makes unconfirmed process cleanup visible', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var recoverableRuns =');
   const end = source.indexOf('      var activity', start);
   for (const uncertain of [false, true]) {
@@ -358,7 +366,7 @@ test('task view makes unconfirmed process cleanup visible', async () => {
 
 
 test('scoped cleanup recovery requires an explicit checkbox and posts the selected version and operator', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-recover-host-run]')");
   const end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-review-plan]')", start);
   for (const scenario of ['unchecked', 'success', 'stale', 'already-recovered']) {
@@ -384,7 +392,7 @@ test('scoped cleanup recovery requires an explicit checkbox and posts the select
 
 
 test('task retry keeps one attempt id and instruction when retrying an uncertain request', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-retry-task-run]')");
   const end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-start-task-run]')", start);
   const calls: any[] = [], notices: any[] = [];
@@ -406,7 +414,7 @@ test('task retry keeps one attempt id and instruction when retrying an uncertain
 });
 
 test('task retry controls cancel cleanly and do not submit without a supported id generator', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-retry-task-run]')");
   const end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-start-task-run]')", start);
   for (const prompt of [null, '', '   ', 'valid']) {
@@ -424,7 +432,7 @@ test('task retry controls cancel cleanly and do not submit without a supported i
 });
 
 test('handoff retry controls link the successor and never duplicate an existing attempt', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var handoffRows =');
   const end = source.indexOf('      var evidenceRows', start);
   for (const scenario of ['recoverable', 'already-retried', 'unknown', 'missing-host']) {
@@ -440,7 +448,7 @@ test('handoff retry controls link the successor and never duplicate an existing 
 });
 
 test('model billing UI requires explicit confirmation, amount and reference, including explicit zero', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-reconcile-model-cost]')");
   const end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-recover-host-run]')", start);
   for (const scenario of ['unchecked', 'blank', 'negative', 'infinite', 'no-reference', 'zero', 'paid', 'stale', 'background', 'overrun-unchecked', 'overrun']) {
@@ -468,7 +476,7 @@ test('model billing UI requires explicit confirmation, amount and reference, inc
 });
 
 test('billing cards keep zero holds pending and label reconciliations as operator reports', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var billingHolds =');
   const end = source.indexOf('      var pending =', start);
   const render = (detail: any) => runInNewContext(source.slice(start, end) + ';billingCard', { detail, esc: String, taskCard: (...parts: string[]) => parts.join('') });
@@ -481,7 +489,7 @@ test('billing cards keep zero holds pending and label reconciliations as operato
 
 
 test('task lifecycle controls expose pause, observation resume and cancellation without replaying execution', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var handoffControls =');
   const end = source.indexOf('      var handoffActors =', start);
   for (const lifecycle of ['active', 'paused', 'cancelled']) {
@@ -498,7 +506,7 @@ test('task lifecycle controls expose pause, observation resume and cancellation 
 });
 
 test('task lifecycle buttons submit the displayed version and recover after errors', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-task-lifecycle]')");
   const end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-handoff-run]')", start);
   for (const scenario of ['pause', 'resume', 'cancel', 'dismiss', 'blank', 'stale', 'network', 'background']) {
@@ -528,7 +536,7 @@ test('task lifecycle buttons submit the displayed version and recover after erro
 
 
 test('task assignment card offers only current handoffs and the recorded owner controls', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var taskAssignment =');
   const end = source.indexOf('      var billingHolds =', start);
   for (const owner of [null, 'user:me', 'user:other']) for (const fresh of [false, true]) {
@@ -544,7 +552,7 @@ test('task assignment card offers only current handoffs and the recorded owner c
 });
 
 test('assignment buttons preserve the same request after failure and never start work', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-task-assignment]')");
   const end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-task-lifecycle]')", start);
   for (const scenario of ['claim', 'release', 'transfer', 'dismiss', 'empty', 'recipient-empty', 'recipient-self', 'failed', 'string-error', 'background']) {
@@ -578,7 +586,7 @@ test('assignment buttons preserve the same request after failure and never start
 });
 
 test('frozen review UI distinguishes producer, independent reviewer and historical findings', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var workReviews ='), end = source.indexOf('      var pending =', start);
   for (const scenario of ['reviewer', 'producer', 'owner', 'reported', 'empty']) {
     const report = scenario === 'reported' ? { result: 'failed', summary: 'Frozen report', findings: [{ severity: 'blocker', path: 'result.txt', message: 'Fix bytes' }, { severity: 'suggestion', path: 'result.txt', message: 'Improve wording' }] } : null;
@@ -590,7 +598,7 @@ test('frozen review UI distinguishes producer, independent reviewer and historic
 });
 
 test('freeze buttons preserve exact source versions and one candidate id across network retries', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-freeze-review]')"), end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-download-review]')", start);
   for (const scenario of ['success', 'failure', 'no-paths', 'no-criterion', 'risk-default']) {
     const calls: any[] = []; let renders = 0, prompts = 0;
@@ -607,7 +615,7 @@ test('freeze buttons preserve exact source versions and one candidate id across 
 });
 
 test('review reports classify findings and never allow a passing verdict with blockers', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-report-review]')"), end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-task-assignment]')", start);
   for (const scenario of ['passed', 'failed', 'blocked', 'pass-blocker', 'fail-empty', 'no-summary', 'network']) {
     const calls: any[] = [], notices: any[] = []; let renders = 0;
@@ -626,7 +634,7 @@ test('review reports classify findings and never allow a passing verdict with bl
 });
 
 test('frozen downloads use returned immutable bytes and surface integrity failures', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-download-review]')"), end = source.indexOf("          Array.prototype.forEach.call(root.querySelectorAll('[data-report-review]')", start);
   for (const failed of [false, true]) {
     let clicked = false; const notices: any[] = [], link: any = { click: () => { clicked = true; } };
@@ -638,7 +646,7 @@ test('frozen downloads use returned immutable bytes and surface integrity failur
 });
 
 test('frozen review criteria hide direct human pass buttons', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var verdictCard;'), end = source.indexOf('      var artifactRows', start);
   const html = runInNewContext(source.slice(start, end) + ';verdictCard', { detail: { acceptance_plans: [{ id: 'plan', version: 4, status: 'pending', human_criteria: [{ id: 'review', name: 'Independent review', frozen_review_required: true }] }] }, outcomes: [], taskCard: (...parts: string[]) => parts.join(''), esc: String, label: (_labels: any, key: string) => key, STATUS_LABELS: {} });
   assert.match(html, /须通过冻结候选的独立审查/);
@@ -647,7 +655,7 @@ test('frozen review criteria hide direct human pass buttons', async () => {
 });
 
 test('task controls show cumulative spend, unknown exposure and the fixed total deadline', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('      var handoffControls ='), end = source.indexOf('      var handoffActors =', start);
   for (const monetary of [false, true]) {
     const html = runInNewContext(source.slice(start, end) + ';handoffControls', { handoffRuns: [{ id: 'run', version: 1, lifecycle: 'active', attempt_budget: { total_budget_usd: monetary ? 1 : null, spent_usd: 0.8, reserved_usd: 0.2, remaining_usd: 0, unknown_reservations: monetary ? 1 : 0, deadline_at: '2030-01-01T00:00:00.000Z', exhausted: true } }], esc: String });

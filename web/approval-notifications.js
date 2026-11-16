@@ -39,7 +39,16 @@ export function startApprovalNotifications(ui) {
   if (!api?.sendNotification || !api?.onAction) return () => {};
   const seen = ui.storage;
   let stopped = false;
-  const listener = api.onAction(event => { void handleApprovalNotificationAction(event, ui); });
+  // Native notification listeners are an optional enhancement. A denied ACL,
+  // missing platform permission, or async listener rejection must never break
+  // the whole Workbench boot: degrade to polling-only instead.
+  let listener = null;
+  try {
+    const pending = api.onAction(event => { void handleApprovalNotificationAction(event, ui); });
+    listener = Promise.resolve(pending).catch(() => null);
+  } catch (_) {
+    listener = null;
+  }
   const refresh = () => ui.api('/api/inbox/refresh', { method: 'POST', body: {} }).then(async inbox => {
     for (const card of inbox.cards || []) {
       if (stopped || card.action !== APPROVAL_ACTION || card.source_kind !== 'work_launch' || !card.task_id) continue;
@@ -57,5 +66,5 @@ export function startApprovalNotifications(ui) {
   }).catch(() => {});
   void refresh();
   const timer = ui.setInterval(refresh, 30000);
-  return () => { stopped = true; ui.clearInterval(timer); void Promise.resolve(listener).then(unlisten => unlisten?.()); };
+  return () => { stopped = true; ui.clearInterval(timer); void listener?.then(unlisten => unlisten?.()); };
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderTaskReplans, mountTaskReplans } from '../workbench/task-replan-ui.js';
+import { renderTaskReplans, mountTaskReplans } from '../web/task-replan-ui.js';
 
 const ui = { esc: (v: unknown) => String(v).replaceAll('<', '&lt;'), taskCard: (...v: string[]) => v.join('|'), operatorOf: () => 'owner' };
 test('replan cards expose current eligible sources and reviewable decisions only to the owner', () => {

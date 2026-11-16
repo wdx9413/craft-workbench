@@ -6,8 +6,8 @@
 // docs/workbench-ideal-state-analysis.md §6.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createModePages } from '../workbench/mode-pages.js';
-import { readMode, writeMode, nextPageForMode, MODE_KEY, MODES } from '../workbench/mode-shell.js';
+import { createModePages } from '../web/mode-pages.js';
+import { readMode, writeMode, nextPageForMode, MODE_KEY, MODES } from '../web/mode-shell.js';
 import { createMockRuntime, mockContext, assertCalled } from './helpers/mock-runtime.js';
 
 // --- V1.1: display names are the spec names while stable keys stay decoupled ---

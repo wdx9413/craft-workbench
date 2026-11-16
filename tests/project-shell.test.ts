@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser module tested with a small DOM port.
-import { mountProjectShell } from '../workbench/project-shell.js';
+import { mountProjectShell } from '../web/project-shell.js';
 const settle = async () => { for (let i=0; i<8; i++) await new Promise(resolve => setImmediate(resolve)); };
 class Element {
   textContent = ''; className = ''; type = ''; hidden = false; disabled = false; children: Element[] = []; onclick: any; dataset: Record<string, string> = {};

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { submitTaskAttempt } from '../workbench/task-submission.js';
+import { submitTaskAttempt } from '../web/task-submission.js';
 
 function composer() { return { submission: null as null | { fingerprint: string; taskId: string; messageId: string; uncertain?: boolean }, submitting: false }; }
 function ids() { let value = 0; return { randomUUID: () => `id-${++value}` }; }

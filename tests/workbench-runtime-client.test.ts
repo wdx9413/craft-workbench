@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 // The Workbench transport is browser JavaScript, exercised directly without a DOM.
 // @ts-expect-error JavaScript module intentionally ships without generated declarations.
-import { createRuntimeClient } from "../workbench/runtime-client.js";
+import { createRuntimeClient } from "../web/runtime-client.js";
 
 test("browser transport preserves token, body, methods and bounded response errors", async () => {
   const calls: Array<{ path: string; init: RequestInit }> = [];

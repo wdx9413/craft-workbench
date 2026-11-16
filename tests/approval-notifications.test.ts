@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { handleApprovalNotificationAction, startApprovalNotifications } from '../workbench/approval-notifications.js';
+import { handleApprovalNotificationAction, startApprovalNotifications } from '../web/approval-notifications.js';
 
 const approval = { task_id: 'task-1', task_run_id: 'run-1', launch_id: 'launch-1', launch_version: 2, task_run_version: 3, decision_version: 2 };
 function fixture(current = true) {
@@ -148,4 +148,27 @@ test('browser mode does not create timers or native notifications', () => {
     assert.doesNotThrow(() => startApprovalNotifications({ host: { __TAURI__: { notification } }, setInterval: () => { timers++; }, clearInterval: () => {} }));
   }
   assert.equal(timers, 0);
+});
+
+test('denied native listener ACL degrades to polling without breaking boot', async () => {
+  const sent: unknown[] = [], cleared: number[] = [];
+  const base = {
+    openTask: () => {}, toast: () => {}, setInterval: () => 9, clearInterval: (id: number) => cleared.push(id),
+    api: async (path: string) => path.includes('/inbox/') ? { cards: [] } : {}
+  };
+  const syncDenied = { ...base, host: { __TAURI__: { notification: {
+    sendNotification: (value: unknown) => sent.push(value),
+    onAction: () => { throw new Error('Command plugin:notification|registerListener not allowed by ACL'); }
+  } } } };
+  assert.doesNotThrow(() => { const stop = startApprovalNotifications(syncDenied); stop(); });
+  assert.deepEqual(cleared, [9]);
+
+  const asyncDenied = { ...base, host: { __TAURI__: { notification: {
+    sendNotification: (value: unknown) => sent.push(value),
+    onAction: () => Promise.reject(new Error('Command plugin:notification|registerListener not allowed by ACL'))
+  } } } };
+  assert.doesNotThrow(() => { const stop = startApprovalNotifications(asyncDenied); stop(); });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(cleared, [9, 9]);
+  assert.equal(sent.length, 0);
 });

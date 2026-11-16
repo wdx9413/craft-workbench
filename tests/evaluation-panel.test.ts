@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mountEvaluationPanel } from '../workbench/evaluation-panel.js';
+import { mountEvaluationPanel } from '../web/evaluation-panel.js';
 
 class Element {
   value = ''; textContent = ''; innerHTML = ''; disabled = false; hidden = false; focused = false; checked = false;

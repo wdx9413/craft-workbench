@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mountHookDiagnosticsPanel, renderHookDiagnostics } from '../workbench/hook-diagnostics.js';
+import { mountHookDiagnosticsPanel, renderHookDiagnostics } from '../web/hook-diagnostics.js';
 
 class Element {
   textContent = '';

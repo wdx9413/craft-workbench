@@ -53,7 +53,7 @@ Scope: `craft-workbench` mock runtime (`node scripts/mock-runtime-server.mjs`), 
 
 ### Fixes shipped this iteration (each with regression tests)
 
-Self-healing watchdog and unauthorized gate (`workbench/connection-state.js`, 100% line/branch/function coverage); live-401 boot gate; executor permission undefined fallback; mock no-cache headers; route-order fixes (picker/files versus the agent-sessions catch-all); rich mock data for approvals/objects/drift/relations/designs; hatch cross-projection plus after-paint plus `pending.run(panel)`; task-detail 新建任务 projection; evaluation mock id derivation sha256(operation_id); cancel/compare/knowledge-assess endpoints.
+Self-healing watchdog and unauthorized gate (`web/connection-state.js`, 100% line/branch/function coverage); live-401 boot gate; executor permission undefined fallback; mock no-cache headers; route-order fixes (picker/files versus the agent-sessions catch-all); rich mock data for approvals/objects/drift/relations/designs; hatch cross-projection plus after-paint plus `pending.run(panel)`; task-detail 新建任务 projection; evaluation mock id derivation sha256(operation_id); cancel/compare/knowledge-assess endpoints.
 
 ### Not verified (honest gaps)
 

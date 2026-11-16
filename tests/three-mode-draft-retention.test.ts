@@ -1,16 +1,16 @@
 // V2 · 三模式体验闭环 — draft / filter retention across mode switches.
 //
 // NEEDREAD §2: 切换保留任务、项目、草稿和筛选，不重跑、不增权。这里直接驱动
-// workbench/app.js 里真实的 setMode 实现（与 mode-shell.test.ts 同一抽取手法），
+// web/app.js 里真实的 setMode 实现（与 mode-shell.test.ts 同一抽取手法），
 // 在一个带草稿的完整 state 上连续切 领航员→控制台→工作台，断言草稿/筛选/
 // 页面/任务均不漂移，且除模式偏好外没有任何派发副作用。
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
-import { nextPageForMode } from '../workbench/mode-shell.js';
+import { nextPageForMode } from '../web/mode-shell.js';
 
 async function loadSetMode() {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const body = source.split('function setMode(mode) {')[1].split('// ------------------------------------------------------------------- render')[0].replace(/}\s*$/, '');
   return new Function('mode', 'state', '$', 'isMode', 'nextPageForMode', 'saveMode', 'paintNav', 'paintModeSwitch', 'go',
     `let modeSwitchRevision = 0; ${body}`);

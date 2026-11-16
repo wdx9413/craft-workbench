@@ -13,6 +13,20 @@ export const LEGACY_NAV_PARAM = 'legacyNav';
 export const MODE_ORDER = ['pilot', 'control', 'workshop'];
 export const isMode = mode => Object.hasOwn(MODES, mode);
 
+/**
+ * Single-surface desktop builds (领航员 / 控制台 / 工作台 as separate apps) pin
+ * their mode through `window.CRAFT_MODE_ONLY` before app.js boots. The pinned
+ * mode replaces the default, the mode switcher is not rendered, and cross-mode
+ * navigation resolves back into the pinned surface instead of another mode.
+ */
+export const MODE_ONLY_KEY = 'craft.modeOnly';
+export function readModeOnly(host = (typeof window === 'undefined' ? null : window)) {
+  try {
+    const pinned = host && host.CRAFT_MODE_ONLY;
+    return isMode(pinned) ? pinned : '';
+  } catch (_) { return ''; }
+}
+
 export function shouldOfferOnboarding(modelCount, completed, initialHash, currentHash, skipped) {
   if (modelCount || completed || skipped || initialHash !== currentHash) return false;
   const params = new URLSearchParams(initialHash.replace(/^#/, ''));

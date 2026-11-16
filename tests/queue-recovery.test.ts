@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser module exercised through a DOM port.
-import { appendQueueRecovery } from '../workbench/queue-recovery.js';
+import { appendQueueRecovery } from '../web/queue-recovery.js';
 
 class Element {
   className = ''; type = ''; textContent = ''; children: Element[] = []; attributes: Record<string, string> = {};

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
-import { MODE_KEY, LEGACY_NAV_PARAM, MODE_ORDER, MODES, PILOT_SESSION_KEY, legacyNavEnabled, modeForLocation, restoreModeForLocation, modeForPage, modeNavKeys, modeRailItems, nextPageForMode, readMode, readPilotSession, writeMode, writePilotSession, shouldOfferOnboarding } from '../workbench/mode-shell.js';
+import { MODE_KEY, LEGACY_NAV_PARAM, MODE_ORDER, MODES, PILOT_SESSION_KEY, legacyNavEnabled, modeForLocation, restoreModeForLocation, modeForPage, modeNavKeys, modeRailItems, nextPageForMode, readMode, readModeOnly, readPilotSession, writeMode, writePilotSession, shouldOfferOnboarding } from '../web/mode-shell.js';
 
 test('switching modes updates the visible shell without changing the mounted page', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const body = source.split('function setMode(mode) {')[1]!.split('// ------------------------------------------------------------------- render')[0]!.replace(/}\s*$/, '');
   const state = { mode: 'pilot', page: 'projects', selectedProject: 'demo' };
   const attributes = new Map([['data-mode', 'pilot']]);
@@ -18,7 +18,7 @@ test('switching modes updates the visible shell without changing the mounted pag
 });
 
 test('switching to a mode that does not show the current page lands on that mode home', async () => {
-  const source = await readFile(new URL('../workbench/app.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
   const body = source.split('function setMode(mode) {')[1]!.split('// ------------------------------------------------------------------- render')[0]!.replace(/}\s*$/, '');
   const state = { mode: 'pilot', page: 'plugins' };
   const attributes = new Map();
@@ -95,6 +95,8 @@ test('writeMode persists and readMode restores it', () => {
   assert.equal(readMode(s), 'pilot');
   writeMode(s, 'workshop');
   assert.equal(readMode(s), 'workshop');
+  // A storage shim without setItem must not crash the write path.
+  assert.doesNotThrow(() => writeMode({ getItem: () => null }, 'control'));
 });
 
 test('readMode ignores unknown stored mode; writeMode ignores unknown input', () => {
@@ -182,6 +184,19 @@ test('back and old contextual links restore the active projection', () => {
   assert.equal(readMode(storage), 'workshop');
 });
 
+test('an unknown page with no active projection falls back to pilot', () => {
+  assert.equal(modeForLocation('nope', null, null), 'pilot');
+  assert.equal(modeForLocation('nope', null, 'bogus'), 'pilot');
+  // A shared task document has no mode owner; with no active projection the
+  // fallback must still resolve to a real mode.
+  assert.equal(modeForLocation('task', null, null), 'pilot');
+  // The same fallback runs inside restoreModeForLocation after a reload.
+  const storage = memoryStorage();
+  assert.equal(restoreModeForLocation('task', null, null, storage), 'pilot');
+  // A Pilot page under an active Pilot projection must not flip modes.
+  assert.equal(restoreModeForLocation('task', null, 'pilot', storage), 'pilot');
+});
+
 test('nextPageForMode keeps current page when it is in the mode nav', () => {
   assert.equal(nextPageForMode('workshop', 'plugins'), 'plugins');
   assert.equal(nextPageForMode('workshop', 'settings'), 'settings');
@@ -219,4 +234,44 @@ test('legacyNavEnabled reads the dev flag only when params carry it', () => {
   assert.equal(legacyNavEnabled({ get: () => null }), false);
   assert.equal(legacyNavEnabled({ get: (k: string) => (k === LEGACY_NAV_PARAM ? '1' : null) }), true);
   assert.equal(legacyNavEnabled({ get: () => { throw new Error('bad'); } }), false);
+});
+
+test('readModeOnly reads the pinned desktop mode and rejects unknown values', () => {
+  assert.equal(readModeOnly({ CRAFT_MODE_ONLY: 'pilot' }), 'pilot');
+  assert.equal(readModeOnly({ CRAFT_MODE_ONLY: 'control' }), 'control');
+  assert.equal(readModeOnly({ CRAFT_MODE_ONLY: 'workshop' }), 'workshop');
+  assert.equal(readModeOnly({ CRAFT_MODE_ONLY: 'bogus' }), '');
+  assert.equal(readModeOnly({}), '');
+  assert.equal(readModeOnly(null), '');
+  assert.equal(readModeOnly({ get CRAFT_MODE_ONLY() { throw new Error('blocked'); } }), '');
+});
+
+test('readModeOnly tolerates a missing host instead of crashing', async () => {
+  const source = await readFile(new URL('../web/mode-shell.js', import.meta.url), 'utf8');
+  const start = source.indexOf('export function readModeOnly');
+  const end = source.indexOf('export function shouldOfferOnboarding');
+  const body = source.slice(start, end).replace(/^export /, '').replace(/host = \(.*\) \{/, 'host) {');
+  const run = new Function('window', 'isMode', body + '\nreturn readModeOnly;')(undefined, (m) => m === 'pilot');
+  assert.equal(run(), '');
+  assert.equal(run(null), '');
+  assert.equal(run({ CRAFT_MODE_ONLY: 'pilot' }), 'pilot');
+});
+
+test('each mode page is an independent module that does not import its siblings', async () => {
+  const files = ['workshop-page.js', 'control-page.js', 'pilot-page.js'];
+  for (const file of files) {
+    const source = await readFile(new URL(`../web/${file}`, import.meta.url), 'utf8');
+    const siblings = files.filter((other) => other !== file);
+    for (const sibling of siblings) {
+      assert.doesNotMatch(source, new RegExp(sibling.replace('.', '\\.'), 'u'), `${file} must not reference ${sibling}`);
+    }
+  }
+  // The one shared surface is the new-session form both pilot and control use.
+  const control = await readFile(new URL('../web/control-page.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(control, /session-form\.js/u, 'the form is injected, not imported, so control stays leaf-level');
+  const app = await readFile(new URL('../web/app.js', import.meta.url), 'utf8');
+  assert.match(app, /import\('\.\/workshop-page\.js'\)/u);
+  assert.match(app, /import\('\.\/control-page\.js'\)/u);
+  assert.match(app, /import\('\.\/pilot-page\.js'\)/u);
+  assert.match(app, /var modePageCache = \{\};/u, 'a fetched mode page is reused, not re-imported per paint');
 });

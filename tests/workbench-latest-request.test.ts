@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser JavaScript is exercised without generated declarations.
-import { createLatestRequest, createChangesetPager } from '../workbench/latest-request.js';
+import { createLatestRequest, createChangesetPager } from '../web/latest-request.js';
 
 test('render seam suppresses obsolete results and obsolete errors across same-page selections', async () => {
   const render = createLatestRequest();

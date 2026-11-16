@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderTaskArtifactRows } from '../workbench/task-artifact-view.js';
+import { renderTaskArtifactRows } from '../web/task-artifact-view.js';
 
 const ui = {
   lead: (icon, tone) => `<i>${icon}:${tone}</i>`,

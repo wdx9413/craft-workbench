@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { approvalIsCurrent, mountPendingApprovals, renderPendingApprovals } from '../workbench/approval-ui.js';
+import { approvalIsCurrent, mountPendingApprovals, renderPendingApprovals } from '../web/approval-ui.js';
 
 const item = { launch_id: 'launch-1', task_run_id: 'run-1', task_id: 'task-1', launch_version: 2, task_run_version: 3, status: 'awaiting_approval' };
 const ui = { esc: (value: string) => value.replaceAll('<', '&lt;'), taskCard: (title: string, subtitle: string, body: string) => [title, subtitle, body].join('|') };

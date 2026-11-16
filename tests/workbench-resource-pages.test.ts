@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser JavaScript is exercised without generated declarations.
-import { createResourcePages } from '../workbench/resource-pages.js';
+import { createResourcePages } from '../web/resource-pages.js';
 
 type Button = { onclick?: () => void; getAttribute: (name: string) => string };
 const button = (id: string): Button => ({ getAttribute: () => id });

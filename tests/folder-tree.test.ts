@@ -2,7 +2,7 @@
 // from app.js. Every branch is driven through injected dependencies.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { FOLDER_PREVIEW, taskRowHtml, taskListRows, folderGroupHtml } from '../workbench/folder-tree.js';
+import { FOLDER_PREVIEW, taskRowHtml, taskListRows, folderGroupHtml } from '../web/folder-tree.js';
 
 const esc = (value) => String(value ?? '');
 const icon = (name, cls) => `<i data-icon="${name}"${cls ? ` class="${cls}"` : ''}></i>`;

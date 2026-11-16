@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { esc, icon, label, fromLabel, statusPill, effectPill, settled, head, emptyState, countChip, asideBlock, asideRows, STATUS_LABELS, changeSetStatusLabel } from '../workbench/ui.js';
+import { esc, icon, label, fromLabel, statusPill, effectPill, settled, head, emptyState, countChip, asideBlock, asideRows, failureText, STATUS_LABELS, changeSetStatusLabel } from '../web/ui.js';
+
+test('failure text translates known kernel sentences and keeps unknown ones verbatim', () => {
+  assert.match(failureText('task has no workspace; choose a project before dispatch'), /工作目录/u);
+  assert.match(failureText('Model openai has no credential'), /密钥/u);
+  assert.match(failureText('fetch failed'), /模型服务/u);
+  // An untranslated reason must still reach the user; hiding it would hide the
+  // reason the task failed.
+  assert.equal(failureText('some brand new failure'), 'some brand new failure');
+  assert.equal(failureText(''), '');
+  assert.equal(failureText(null), '');
+});
 
 test('change set statuses have Chinese labels and unknown fallback', () => {
   assert.equal(changeSetStatusLabel('draft'), '待接受');

@@ -19,6 +19,33 @@ function parsePlistValue(plist, key) {
   return match[1];
 }
 
+/**
+ * Classify one bundle entry for the digest walk.
+ *
+ * The classification is split out from the filesystem walk so both outcomes
+ * are reachable on every platform: Windows cannot create relative symlinks
+ * without elevation and has no `mkfifo`, so a walk-only test could never
+ * prove that an escaping link or an unsupported file type is refused.
+ */
+export function classifyBundleEntry({ relative, stat, target, resolved, root }) {
+  if (stat.isSymbolicLink()) {
+    if (path.isAbsolute(target) || !inside(root, resolved)) {
+      return { kind: 'error', message: `应用包包含越界符号链接：${relative}` };
+    }
+    return { kind: 'link', target };
+  }
+  if (stat.isDirectory()) return { kind: 'dir' };
+  if (stat.isFile()) return { kind: 'file' };
+  return { kind: 'error', message: `应用包包含不支持的文件类型：${relative}` };
+}
+
+/** The digest bytes one classified entry contributes. */
+export function bundleEntryDigest(classification) {
+  if (classification.kind === 'link') return `link\0${classification.target}\0`;
+  if (classification.kind === 'dir') return 'dir\0';
+  return 'file\0';
+}
+
 async function appDigest(bundlePath) {
   const root = await fs.realpath(bundlePath);
   const hash = createHash('sha256');
@@ -29,19 +56,16 @@ async function appDigest(bundlePath) {
       const relative = path.relative(root, entryPath);
       const stat = await fs.lstat(entryPath);
       hash.update(`${relative}\0${stat.mode & 0o777}\0`);
-      if (stat.isSymbolicLink()) {
-        const target = await fs.readlink(entryPath);
-        const resolved = path.resolve(path.dirname(entryPath), target);
-        if (path.isAbsolute(target) || !inside(root, resolved)) throw new Error(`应用包包含越界符号链接：${relative}`);
-        hash.update(`link\0${target}\0`);
-      } else if (stat.isDirectory()) {
-        hash.update('dir\0');
+      const isLink = stat.isSymbolicLink();
+      const target = isLink ? await fs.readlink(entryPath) : '';
+      const resolved = isLink ? path.resolve(path.dirname(entryPath), target) : '';
+      const classification = classifyBundleEntry({ relative, stat, target, resolved, root });
+      if (classification.kind === 'error') throw new Error(classification.message);
+      hash.update(bundleEntryDigest(classification));
+      if (classification.kind === 'dir') {
         await visit(entryPath);
-      } else if (stat.isFile()) {
-        hash.update('file\0');
+      } else if (classification.kind === 'file') {
         hash.update(await fs.readFile(entryPath));
-      } else {
-        throw new Error(`应用包包含不支持的文件类型：${relative}`);
       }
     }
   }

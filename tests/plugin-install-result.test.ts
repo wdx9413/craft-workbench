@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pluginInstallResult } from '../workbench/plugin-install-result.js';
+import { pluginInstallResult } from '../web/plugin-install-result.js';
 
 test('plugin registration reports its actual usability', () => {
   assert.deepEqual(pluginInstallResult({ runtime_status: 'unsupported', unsupported_reason: 'Hook 未接入' }, '已安装'),

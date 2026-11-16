@@ -6,7 +6,7 @@
   "build": {
     "beforeBuildCommand": "pnpm run prepare-sidecar",
     "beforeDevCommand": "pnpm run prepare-sidecar",
-    "frontendDist": "../../workbench"
+    "frontendDist": "../../web"
   },
   "app": {
     "withGlobalTauri": true,

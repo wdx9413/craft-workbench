@@ -7,7 +7,7 @@
 // craft-eval-shaped reports. Missing real data is mocked per delivery directive.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createModPages } from '../workbench/mod-pages.js';
+import { createModPages } from '../web/mod-pages.js';
 import { createMockRuntime, assertCalled } from './helpers/mock-runtime.js';
 
 const presentation = {

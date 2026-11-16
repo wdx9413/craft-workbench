@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { hasThemeContrast, themeColor } from '../workbench/plugin-theme-colors.js';
+import { hasThemeContrast, themeColor } from '../web/plugin-theme-colors.js';
 
 test('themeColor accepts short and full hex colors and expands short channels', () => {
   assert.deepEqual(themeColor('#abc'), [170, 187, 204]);

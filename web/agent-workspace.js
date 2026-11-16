@@ -133,6 +133,7 @@ export function nativeHistoryMessages(result) {
 }
 /** Native output is held only in this view; the CLI owns its persistent history. */
 export function mountAgentWorkspace(root, { api, taskId, clock = globalThis, invoke = null, workspace = '', selectedLink = '', defaultPermission = '', defaultProvider = '', onSessionsChanged = () => {}, onOpenNative = null, onOpenPage = () => {} }) {
+  const doc = root.ownerDocument || globalThis.document;
   if (!root) return;
   root.innerHTML = '<div class="agent-head"><div class="agent-heading"><span class="agent-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5h6l2 2h9v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="m9 13 2 2-2 2m4 0h3"/></svg></span><div><h2>工作会话</h2><p>选择项目与工具，用 Codex / Claude / DSH 或 Craft 一起工作。</p></div></div><span class="agent-badge">本地工作区</span></div>' +
     '<div class="agent-body"><div class="agent-providers" aria-label="命令行工具状态"><div class="agent-provider"><span data-provider="codex">Codex：检测中</span><a data-install="codex" href="https://developers.openai.com/codex/cli/" target="_blank" rel="noopener noreferrer">安装指南</a></div><div class="agent-provider"><span data-provider="claude">Claude：检测中</span><a data-install="claude" href="https://code.claude.com/docs/en/setup" target="_blank" rel="noopener noreferrer">安装指南</a></div></div><div class="agent-install-help" data-role="install-help" hidden></div><div class="agent-section agent-configuration"><div class="agent-section-title"><h3>开始工作</h3><span>选择项目与工具</span></div><div class="agent-setup"><label class="agent-workspace-field">项目文件夹<input data-field="workspace" placeholder="选择文件夹或输入完整路径"></label><button type="button" class="btn agent-native-folder" data-action="native-folder" aria-label="选择项目文件夹">选择目录</button>' +
@@ -375,6 +376,11 @@ export function mountAgentWorkspace(root, { api, taskId, clock = globalThis, inv
   function closeCommandPanel() {
     if (commandPanel) commandPanel.hidden = true;
     if (!commandPanel && mentionMenu) mentionMenu.hidden = true;
+    const panel = commandPanel || mentionMenu;
+    if (panel && typeof panel.dispatchEvent === 'function' && doc && typeof doc.createEvent === 'function') {
+      const event = doc.createEvent('Event'); event.initEvent('close', false, false);
+      panel.dispatchEvent(event);
+    }
   }
   function renderCommandPanel(items) {
     nativePicker.open = false;
@@ -404,6 +410,32 @@ export function mountAgentWorkspace(root, { api, taskId, clock = globalThis, inv
       panel.append(entry);
     }
     panel.hidden = false;
+    // A command surface is transient: any interaction outside it (another
+    // control, a native select, a mode switch or a page navigation) must close
+    // it, otherwise it stays over the composer and overlaps later popups.
+    let ignoreOpeningClick = true;
+    const dismiss = (event) => {
+      if (ignoreOpeningClick && event.type === 'click') { ignoreOpeningClick = false; return; }
+      const target = event.target;
+      const plus = button('composer-plus');
+      if (target && typeof Node !== 'undefined' && target instanceof Node &&
+          (panel.contains(target) || (plus && plus.contains(target)))) return;
+      closeCommandPanel();
+    };
+    const removeDismiss = () => {
+      if (typeof doc.removeEventListener === 'function') {
+        doc.removeEventListener('click', dismiss, true);
+        doc.removeEventListener('hashchange', dismiss, true);
+      }
+      if (typeof panel.removeEventListener === 'function') panel.removeEventListener('close', removeDismiss);
+    };
+    if (typeof doc.addEventListener === 'function') {
+      // `click` (not pointerdown) so semantic/UIA clicks and keyboard activation
+      // also dismiss; `hashchange` covers page navigation without a click.
+      doc.addEventListener('click', dismiss, true);
+      doc.addEventListener('hashchange', dismiss, true);
+      if (typeof panel.addEventListener === 'function') panel.addEventListener('close', removeDismiss);
+    }
   }
   function openPlusMenu() {
     const mode = field('work-mode').value || 'default';

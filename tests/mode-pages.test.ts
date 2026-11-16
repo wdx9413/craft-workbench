@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createModePages } from '../workbench/mode-pages.js';
+import { createModePages } from '../web/mode-pages.js';
 
 // A narrow context is enough to exercise the three-mode pages in Node: the
 // module must not reach into the app shell for anything else.
@@ -59,6 +59,74 @@ test('viewHome mounts the agent workspace inside the shell', async () => {
   const root = { querySelector: (sel) => sel === '#agent-workspace' ? { isConnected: true } : null };
   view.mounts[0](root);
   assert.equal(mounted, 1);
+});
+
+test('viewHome exposes plugin context actions and terminal events for real run data', async () => {
+  const contextButton = { getAttribute: () => '0', onclick: null as null | (() => void) };
+  const contributionHost = { hidden: true, innerHTML: '', querySelectorAll: (selector: string) =>
+    selector === '[data-plugin-context-action]' ? [contextButton] : [] };
+  const toolbar = { innerHTML: '', querySelectorAll: () => [] };
+  const terminal = { textContent: '' };
+  const navigated: string[] = [];
+  const pages = createModePages(context({
+    state: { page: 'home', settings: null, composer: { folder: 'ws-1' }, execution: {}, folderGroups: [] },
+    go: (page: string) => navigated.push(page),
+    api: (path: string) => {
+      if (path.includes('/contributions')) return Promise.resolve({ contributions: [
+        { plugin_id: 'p1', source: 'Release helper', context_actions: [{ title: '打开发布记录', target: 'tasks' }] },
+      ] });
+      if (path.includes('/host-runs/run%2F1')) return Promise.resolve({ events: [{ created_at: 't1', event_type: 'start', payload: { status: 'ok' } }] });
+      if (path.includes('/host-runs')) return Promise.resolve({ runs: [{ id: 'run/1' }, { id: 'run/2' }, { id: 'run/3' }, { id: 'run/4' }] });
+      if (path.includes('/host-runs/run%2F2')) return Promise.resolve({ events: [] });
+      return Promise.resolve({ items: [], bindings: [], mods: [] });
+    },
+  }));
+  const view = await pages.viewHome();
+  view.mounts[0]({ querySelector: (selector: string) =>
+    selector === '#agent-workspace' ? {} : selector === '#session-toolbar' ? toolbar
+      : selector === '#plugin-context-actions' ? contributionHost : selector === '#terminal-out' ? terminal : null } as never);
+  await new Promise<void>((r) => setImmediate(r));
+  assert.equal(contributionHost.hidden, false);
+  assert.match(contributionHost.innerHTML, /打开发布记录/u);
+  contextButton.onclick!();
+  assert.deepEqual(navigated, ['tasks']);
+  await new Promise<void>((r) => setImmediate(r));
+  assert.match(terminal.textContent, /\[t1\] start · ok/u);
+});
+
+test('viewHome terminal reports unavailable host-run detail and unmounts a Mod globally', async () => {
+  const unmountMod = { getAttribute: () => 'm1', onclick: null as null | (() => void) };
+  const toolbar = { innerHTML: '', querySelectorAll: (selector: string) =>
+    selector === '[data-unmount-mod]' ? [unmountMod] : [] };
+  const terminal = { textContent: '' };
+  const calls: Array<{ path: string; options?: Record<string, unknown> }> = [];
+  const navigated: string[] = [];
+  const failures: unknown[] = [];
+  const pages = createModePages(context({
+    state: { page: 'home', settings: null, composer: { folder: 'ws-1' }, execution: {}, folderGroups: [] },
+    go: (page: string) => navigated.push(page),
+    fail: (error: unknown) => failures.push(error),
+    api: (path: string, options?: Record<string, unknown>) => {
+      calls.push({ path, options });
+      if (path.includes('/host-runs/run%2F1')) return Promise.reject(new Error('detail offline'));
+      if (path.startsWith('/api/host-runs')) return Promise.resolve({ runs: [{ id: 'run/1' }] });
+      return Promise.resolve({});
+    },
+  }));
+  const view = await pages.viewHome();
+  view.mounts[0]({ querySelector: (selector: string) =>
+    selector === '#agent-workspace' ? {} : selector === '#session-toolbar' ? toolbar
+      : selector === '#terminal-out' ? terminal : null } as never);
+  await new Promise<void>((r) => setImmediate(r));
+  assert.equal(terminal.textContent, '终端流暂不可用');
+  unmountMod.onclick!();
+  await new Promise<void>((r) => setImmediate(r));
+  const disable = calls.find((call) => call.path.includes('/mods/m1/disable'));
+  assert.ok(disable);
+  assert.equal((disable?.options as { method?: string } | undefined)?.method, 'POST');
+  assert.deepEqual(navigated, ['home']);
+  await new Promise<void>((r) => setImmediate(r));
+  assert.equal(failures.length, 0);
 });
 
 test('viewHome shows a hot-plug Mod/Plugin toolbar and a collapsible raw terminal', async () => {
@@ -221,6 +289,85 @@ test('viewPilot is a minimal superagent surface with internal roles hidden in de
   assert.doesNotMatch(view.html, /改派执行模板/u);
   assert.match(view.aside, /领航员边界/u);
   assert.doesNotMatch(view.aside, /Mainer|Router|Worker|Reviewer/u);
+});
+
+test('viewPilot samples fill the composer and clarify options stay selectable', async () => {
+  const nodes: Record<string, any> = {
+    '#pilot-thread': { innerHTML: '', onclick: null }, '#pilot-form': { onsubmit: null },
+    '#pilot-input': { value: '', oninput: null, focus() { nodes['#pilot-input'].focused = true; } },
+    '#pilot-send': { disabled: true }, '#pilot-queue-state': { textContent: '' },
+    '#pilot-provider': { value: 'auto' }, '#pilot-permission': { value: 'auto' },
+    '#pilot-settings': { hidden: true }, '#pilot-plus': { setAttribute() {} },
+    '#pilot-clarify': { innerHTML: '', hidden: true,
+      querySelectorAll: (selector: string) => selector === '[data-clarify-opt]' ? clarifyOptions : [],
+      querySelector: (selector: string) => selector === '#clarify-submit' ? submit : null },
+  };
+  const clarifyOptions = ['Admin-UI', 'H5-Portal'].map((value, index) => ({
+    getAttribute: () => value, classList: { add() {} }, disabled: false, selected: index === 0,
+    onclick: null as null | (() => void),
+  }));
+  const submit = { onclick: null as null | (() => void) };
+  const bodies: any[] = [];
+  const pages = createModePages(context({
+    state: { page: 'pilot', settings: null, composer: { folder: '', models: [] }, execution: {}, folderGroups: [], pilotSessionId: '' },
+    host: { setTimeout: () => 0, clearTimeout: () => {} },
+    api: (path: string, options?: any) => {
+      if (path === '/api/pilot/sessions' && options?.method === 'POST') return Promise.resolve({ session: { id: 'session-clarify' } });
+      if (path.endsWith('/turns/auto')) { bodies.push(options?.body); return Promise.resolve({ status: 'blocked', questions: [{ title: '选择工程', questions: ['重构哪一端？'], options: ['Admin-UI', 'H5-Portal'] }] }); }
+      return Promise.resolve({ turns: [], tasks: [], routes: [], reviews: [], results: [], progress: { counts: {}, result_facts: {} } });
+    },
+  }));
+  const sampleButton = { getAttribute: () => '审查当前仓库', onclick: null as null | (() => void) };
+  const view = await pages.viewPilot();
+  view.mounts[0]({
+    isConnected: true,
+    querySelector: (selector: string) => nodes[selector] ?? null,
+    querySelectorAll: (selector: string) => selector === '[data-pilot-sample]' ? [sampleButton] : [],
+  } as never);
+  await flush();
+  sampleButton.onclick!();
+  assert.equal(nodes['#pilot-input'].value, '审查当前仓库');
+  assert.equal(nodes['#pilot-input'].focused, true);
+  nodes['#pilot-form'].onsubmit({ preventDefault() {} });
+  await flush();
+  await flush();
+  assert.equal(nodes['#pilot-clarify'].hidden, false);
+  clarifyOptions[0].onclick!();
+  clarifyOptions[1].onclick!();
+  submit.onclick!();
+  await flush();
+  await flush();
+  assert.match(String(bodies[1]?.input || ''), /Admin-UI/u);
+});
+
+test('viewPilot destroy stops polling and restores the message dock', async () => {
+  let cleared = 0;
+  let restored = false;
+  const root = pilotNodes();
+  const formParent = { insertBefore: () => {} };
+  root.querySelector('#pilot-form').parentNode = formParent;
+  const dock = { parentNode: formParent, appendChild: () => {} };
+  const pages = createModePages(context({
+    state: { page: 'pilot', settings: null, composer: { folder: '', models: [] }, execution: {}, folderGroups: [], pilotSessionId: 'destroy-session' },
+    host: { setTimeout: () => 1, clearTimeout: () => { cleared += 1; } },
+    api: () => Promise.resolve({ turns: [], tasks: [], routes: [], reviews: [], results: [], progress: { counts: { running: 1 } } }),
+  }));
+  const previousDocument = globalThis.document;
+  (globalThis as any).document = { getElementById: (id: string) => (id === 'message-dock' ? dock : null) };
+  const view = await pages.viewPilot();
+  let mountResult: unknown;
+  try {
+    mountResult = view.mounts[0](root as never);
+    await flush();
+  } finally {
+    (globalThis as any).document = previousDocument;
+  }
+  const teardown = (mountResult as { destroy?: () => void }).destroy;
+  assert.equal(typeof teardown, 'function');
+  dock.parentNode.appendChild = () => { restored = true; };
+  teardown!();
+  assert.ok(cleared >= 1);
+  assert.equal(restored, true);
 });
 
 test('viewPilot flight strip renders four stages and drills into a stage log', async () => {
@@ -689,6 +836,33 @@ test('newSessionDrawer blocks missing models and reports API failure', async () 
   failed.pages.newSessionDrawer('/project').actions[1].run();
   await flush();
   assert.ok(failureNotices.includes('api failed'), JSON.stringify({ failureNotices, paths: failed.calls.map((x) => x.path) }));
+});
+
+test('newSessionDrawer falls back to generated ids without crypto.randomUUID', async () => {
+  const fallbackCalls: { path: string; body?: any }[] = [];
+  const doc = {
+    querySelector: () => ({
+      querySelector: (selector: string) => {
+        const key = /data-field="([^"]+)"/u.exec(selector)?.[1];
+        return key ? { value: { workspace: '/project', provider: 'codex', model: '', permission: 'ask', prompt: '先生成 id' }[key] ?? '' } : null;
+      },
+      querySelectorAll: () => [{ disabled: false }],
+    }),
+  };
+  const pages = createModePages(context({
+    doc,
+    host: {},
+    openTask: () => {},
+    dismissInline: () => {},
+    renderFolderTree: () => {},
+    api: (path: string, options?: any) => { fallbackCalls.push({ path, body: options?.body }); return Promise.resolve({ task: { id: 'task-1' } }); },
+  }));
+  pages.newSessionDrawer('/project').actions[1].run();
+  await flush();
+  const task = fallbackCalls.find((call) => call.path === '/api/tasks');
+  assert.match(task?.body?.task_id ?? '', /^task_/u);
+  const session = fallbackCalls.find((call) => call.path === '/api/workbench/agent-sessions');
+  assert.match(session?.body?.operation_id ?? '', /^\d+/u);
 });
 
 test('viewMyTasks wires task rows and console-local drawer', async () => {

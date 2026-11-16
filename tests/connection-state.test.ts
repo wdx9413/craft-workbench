@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CONNECTION, CONNECTION_MAX_ATTEMPTS, connectionRetryDelay, shouldRetryConnection } from '../workbench/connection-state.js';
+import { CONNECTION, CONNECTION_MAX_ATTEMPTS, connectionRetryDelay, shouldRetryConnection } from '../web/connection-state.js';
 
 test('connection views are explicit and never invent a success label', () => {
   assert.deepEqual(CONNECTION.ok, { state: 'ok', rail: '已连接 · 仅本机', status: '已连接' });

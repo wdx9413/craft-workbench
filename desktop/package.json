@@ -7,7 +7,10 @@
     "prepare-sidecar": "node scripts/prepare-sidecar.mjs",
     "version-manager": "node scripts/fixed-version-manager-cli.mjs",
     "dev": "pnpm run prepare-sidecar && tauri dev",
-    "build": "pnpm run prepare-sidecar && tauri build"
+    "build": "pnpm run prepare-sidecar && tauri build",
+    "build:pilot": "pnpm run prepare-sidecar && tauri build --config src-tauri/tauri.pilot.json",
+    "build:control": "pnpm run prepare-sidecar && tauri build --config src-tauri/tauri.control.json",
+    "build:workshop": "pnpm run prepare-sidecar && tauri build --config src-tauri/tauri.workshop.json"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0"

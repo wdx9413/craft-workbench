@@ -6,8 +6,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createMockServer } from '../scripts/mock-runtime-server.mjs';
-import { mountMessageDock } from '../workbench/message-dock.js';
-import { mountNativeTools } from '../workbench/native-tools-panel.js';
+import { mountMessageDock } from '../web/message-dock.js';
+import { mountNativeTools } from '../web/native-tools-panel.js';
 
 const esc = (value) => String(value ?? '');
 const icon = (name) => `<svg>${name}</svg>`;

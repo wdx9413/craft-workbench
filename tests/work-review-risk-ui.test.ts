@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderTaskReviewRisk } from '../workbench/work-review-risk-ui.js';
+import { renderTaskReviewRisk } from '../web/work-review-risk-ui.js';
 test('risk card explains fixed rules and source versions while keeping ungoverned tasks compact', () => {
   const ui = { esc: (value: unknown) => String(value).replaceAll('<', '&lt;'), taskCard: (...args: string[]) => args.join('|') };
   assert.equal(renderTaskReviewRisk({}, ui), '');

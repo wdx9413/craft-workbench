@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyAssetFocus, assetAuditAttribute, assetControlAttribute, parseAssetFocus } from '../workbench/asset-focus.js';
+import { applyAssetFocus, assetAuditAttribute, assetControlAttribute, parseAssetFocus } from '../web/asset-focus.js';
 
 test('the focus string maps each context member to its own audit control', () => {
   assert.equal(assetAuditAttribute('experience'), 'data-exp-audit');

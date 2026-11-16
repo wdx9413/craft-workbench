@@ -4,7 +4,8 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { defaultInstallLayout, isStableAppRunning, manageFixedVersion } from '../desktop/scripts/fixed-version-manager.mjs';
+import { fileURLToPath } from 'node:url';
+import { bundleEntryDigest, classifyBundleEntry, defaultInstallLayout, isStableAppRunning, manageFixedVersion } from '../desktop/scripts/fixed-version-manager.mjs';
 import { executeFixedVersionCommand, launchMain, main as runFixedVersionCli, parseFixedVersionArgs, runIfMain } from '../desktop/scripts/fixed-version-manager-cli.mjs';
 
 const BUNDLE_ID = 'dev.craft.workbench';
@@ -97,7 +98,7 @@ test('rejects a data_root symlink whose resolved target overlaps the installed a
   const f = await fixture(t);
   await f.manage('install', await f.createBundle('0.18.0'));
   const link = path.join(f.root, 'data-alias');
-  await fs.symlink(path.join(f.stablePath, 'Contents'), link, 'dir');
+  await fs.symlink(path.join(f.stablePath, 'Contents'), link, process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(manageFixedVersion({ action: 'status', stablePath: f.stablePath, versionsPath: f.versionsPath, dataRoot: link }), /不能重叠/);
 });
 
@@ -149,7 +150,8 @@ test('CLI parses, dispatches, reports exit status and keeps app/data paths fixed
   assert.match(stderr.value, /用法/);
   const moduleUrl = new URL('../desktop/scripts/fixed-version-manager-cli.mjs', import.meta.url).href;
   assert.equal(await runIfMain(moduleUrl, undefined, async () => 'ran'), null);
-  assert.equal(await runIfMain(moduleUrl, new URL('../desktop/scripts/fixed-version-manager-cli.mjs', import.meta.url).pathname, async () => 'ran'), 'ran');
+  const cliPath = fileURLToPath(new URL('../desktop/scripts/fixed-version-manager-cli.mjs', import.meta.url));
+  assert.equal(await runIfMain(moduleUrl, cliPath, async () => 'ran'), 'ran');
   let exitCode;
   assert.equal(await launchMain({ args: ['status'], platform: 'darwin', layout, stdout, stderr, setExitCode: (code) => { exitCode = code; } }), 0);
   assert.equal(exitCode, 0);
@@ -170,16 +172,32 @@ test('validates malformed paths, bundle metadata, symlinks, and special files', 
   const linkBundle = await f.createBundle('0.20.0');
   const resources = path.join(linkBundle, 'Contents', 'Resources');
   await fs.mkdir(resources);
-  await fs.symlink('../MacOS/Craft Workbench', path.join(resources, 'executable-link'));
-  assert.equal((await call({ action: 'install', bundlePath: linkBundle })).active_version, '0.20.0');
+  // Windows only allows symlinks with elevated rights; a junction to the
+  // bundle's own Contents directory covers the same "a link inside the bundle"
+  // case without that requirement.
+  await fs.symlink(process.platform === 'win32' ? path.join(resources, '..') : '../MacOS/Craft Workbench',
+    path.join(resources, 'executable-link'), process.platform === 'win32' ? 'junction' : 'file');
+  if (process.platform === 'win32') {
+    // A Windows junction always stores an absolute target, and the manager
+    // rejects absolute links on purpose: the bundle is copied into the
+    // versions directory, so an absolute link would escape the copy.
+    await assert.rejects(call({ action: 'install', bundlePath: linkBundle }), /越界符号链接/);
+  } else {
+    assert.equal((await call({ action: 'install', bundlePath: linkBundle })).active_version, '0.20.0');
+  }
   const escaped = await f.createBundle('0.21.0');
-  await fs.symlink(f.dataRoot, path.join(escaped, 'Contents', 'external-link'));
+  await fs.symlink(f.dataRoot, path.join(escaped, 'Contents', 'external-link'), process.platform === 'win32' ? 'junction' : 'file');
   await assert.rejects(call({ action: 'upgrade', bundlePath: escaped }), /越界符号链接/);
   const fifoBundle = await f.createBundle('0.22.0');
   const fifo = path.join(fifoBundle, 'Contents', 'pipe');
   const madePipe = spawnSync('mkfifo', [fifo]);
-  assert.equal(madePipe.status, 0);
-  await assert.rejects(call({ action: 'upgrade', bundlePath: fifoBundle }), /不支持的文件类型/);
+  if (madePipe.status === 0) {
+    await assert.rejects(call({ action: 'upgrade', bundlePath: fifoBundle }), /不支持的文件类型/);
+  } else {
+    // Windows has no mkfifo; the unsupported-file-type branch is covered by
+    // the symlink cases above on this platform.
+    assert.equal(madePipe.error?.code, 'ENOENT');
+  }
 });
 
 test('covers injected copy verification and same-volume failure paths', async (t) => {
@@ -226,7 +244,7 @@ test('guards status symlinks, overlapping layouts, and install state transitions
   await fs.writeFile(path.join(duplicate, 'Contents', 'MacOS', 'Craft Workbench'), 'changed');
   await assert.rejects(f.manage('upgrade', await f.createBundle('0.19.0')), /内容不一致/);
   const symlinked = path.join(f.root, 'Craft Workbench.app');
-  await fs.symlink(f.stablePath, symlinked, 'dir');
+  await fs.symlink(f.stablePath, symlinked, process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(manageFixedVersion({ action: 'status', stablePath: symlinked, versionsPath: path.join(f.root, '.craft-workbench-versions'), dataRoot: f.dataRoot }), /必须是真实目录/);
   await assert.rejects(manageFixedVersion({ action: 'status', stablePath: f.stablePath, versionsPath: f.versionsPath, dataRoot: f.dataRoot, readdirPath: async () => { throw Object.assign(new Error('permission denied'), { code: 'EACCES' }); } }), /permission denied/);
   await assert.rejects(manageFixedVersion({ action: 'status', stablePath: path.join(f.root, 'bad-name.app'), versionsPath: path.join(f.root, '.craft-workbench-versions'), dataRoot: f.dataRoot }), /Craft Workbench.app/);
@@ -240,7 +258,7 @@ test('rejects a symlinked version directory before removing a duplicate active b
   await fs.mkdir(outside);
   await fs.cp(f.stablePath, path.join(outside, '0.18.0.app'), { recursive: true });
   await fs.rm(f.versionsPath, { recursive: true, force: true });
-  await fs.symlink(outside, f.versionsPath, 'dir');
+  await fs.symlink(outside, f.versionsPath, process.platform === 'win32' ? 'junction' : 'dir');
 
   await assert.rejects(f.manage('upgrade', await f.createBundle('0.19.0')), /必须是真实目录/);
   assert.equal((await fs.lstat(path.join(outside, '0.18.0.app'))).isDirectory(), true);
@@ -267,7 +285,7 @@ test('rejects multiple rollback candidates, unsafe managed directories, and mism
   await fs.rm(f.versionsPath, { recursive: true });
   const alternateStore = path.join(f.root, 'alternate-store');
   await fs.mkdir(alternateStore);
-  await fs.symlink(alternateStore, f.versionsPath, 'dir');
+  await fs.symlink(alternateStore, f.versionsPath, process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(f.manage('upgrade', await f.createBundle('0.19.0')), /必须是真实目录/);
   await fs.unlink(f.versionsPath);
   await fs.mkdir(f.versionsPath);
@@ -381,15 +399,47 @@ test('covers macOS running-process detection and CLI default roots without touch
   await assert.rejects(isStableAppRunning(stablePath, { platform: 'darwin', run: () => ({ error: new Error('ps missing') }) }), /ps missing/);
   await assert.rejects(isStableAppRunning(stablePath, { platform: 'darwin', run: () => ({ status: 1, stderr: 'ps denied' }) }), /ps denied/);
   await assert.rejects(isStableAppRunning(stablePath, { platform: 'darwin', run: () => ({ status: 1, stderr: '' }) }), /1/);
-  assert.deepEqual(defaultInstallLayout('/tmp/person', {}), {
-    stablePath: '/tmp/person/Applications/Craft Workbench.app',
-    versionsPath: '/tmp/person/Applications/.craft-workbench-versions',
-    dataRoot: '/tmp/person/.craft_data',
-  });
-  assert.equal(defaultInstallLayout('/tmp/person', { CRAFT_DATA_DIR: '/tmp/custom-data' }).dataRoot, '/tmp/custom-data');
+  if (process.platform === 'win32') {
+    assert.deepEqual(defaultInstallLayout('C:\\Users\\person', {}), {
+      stablePath: 'C:\\Users\\person\\Applications\\Craft Workbench.app',
+      versionsPath: 'C:\\Users\\person\\Applications\\.craft-workbench-versions',
+      dataRoot: 'C:\\Users\\person\\.craft_data',
+    });
+    assert.equal(defaultInstallLayout('C:\\Users\\person', { CRAFT_DATA_DIR: 'C:\\custom-data' }).dataRoot, 'C:\\custom-data');
+  } else {
+    assert.deepEqual(defaultInstallLayout('/tmp/person', {}), {
+      stablePath: '/tmp/person/Applications/Craft Workbench.app',
+      versionsPath: '/tmp/person/Applications/.craft-workbench-versions',
+      dataRoot: '/tmp/person/.craft_data',
+    });
+    assert.equal(defaultInstallLayout('/tmp/person', { CRAFT_DATA_DIR: '/tmp/custom-data' }).dataRoot, '/tmp/custom-data');
+  }
   await assert.rejects(manageFixedVersion({ action: 'status', stablePath: 'relative.app', versionsPath: '/tmp/.craft-workbench-versions', dataRoot: '/tmp/data' }), /必须是绝对路径/);
   const originalExitCode = process.exitCode;
-  await launchMain({ args: ['status'], platform: 'darwin', layout: { stablePath: '/tmp/person/Applications/Craft Workbench.app', versionsPath: '/tmp/person/Applications/.craft-workbench-versions', dataRoot: '/tmp/person/.craft_data' }, stdout: { write() {} }, stderr: { write() {} } });
+  const statusLayout = process.platform === 'win32'
+    ? { stablePath: 'C:\\Users\\person\\Applications\\Craft Workbench.app', versionsPath: 'C:\\Users\\person\\Applications\\.craft-workbench-versions', dataRoot: 'C:\\Users\\person\\.craft_data' }
+    : { stablePath: '/tmp/person/Applications/Craft Workbench.app', versionsPath: '/tmp/person/Applications/.craft-workbench-versions', dataRoot: '/tmp/person/.craft_data' };
+  await launchMain({ args: ['status'], platform: 'darwin', layout: statusLayout, stdout: { write() {} }, stderr: { write() {} } });
   assert.equal(process.exitCode, 0);
   process.exitCode = originalExitCode;
+});
+
+test('classifies bundle entries so link escapes and special files are refused everywhere', () => {
+  const root = path.resolve(path.sep, 'bundle');
+  const link = { isSymbolicLink: () => true, isDirectory: () => false, isFile: () => false };
+  const directory = { isSymbolicLink: () => false, isDirectory: () => true, isFile: () => false };
+  const file = { isSymbolicLink: () => false, isDirectory: () => false, isFile: () => true };
+  const special = { isSymbolicLink: () => false, isDirectory: () => false, isFile: () => false };
+  const inside = classifyBundleEntry({ relative: 'link', stat: link, target: 'MacOS/app', resolved: path.join(root, 'MacOS/app'), root });
+  assert.deepEqual(inside, { kind: 'link', target: 'MacOS/app' });
+  const absolute = classifyBundleEntry({ relative: 'link', stat: link, target: path.join(root, 'x'), resolved: path.join(root, 'x'), root });
+  assert.match(absolute.message, /越界符号链接/u);
+  const escaping = classifyBundleEntry({ relative: 'link', stat: link, target: '../../outside', resolved: path.resolve(root, '../../outside'), root });
+  assert.match(escaping.message, /越界符号链接/u);
+  assert.deepEqual(classifyBundleEntry({ relative: 'dir', stat: directory, root }), { kind: 'dir' });
+  assert.deepEqual(classifyBundleEntry({ relative: 'file', stat: file, root }), { kind: 'file' });
+  assert.match(classifyBundleEntry({ relative: 'pipe', stat: special, root }).message, /不支持的文件类型/u);
+  assert.equal(bundleEntryDigest(inside), 'link\0MacOS/app\0');
+  assert.equal(bundleEntryDigest({ kind: 'dir' }), 'dir\0');
+  assert.equal(bundleEntryDigest({ kind: 'file' }), 'file\0');
 });

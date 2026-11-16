@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 // @ts-expect-error Browser JavaScript is exercised without generated declarations.
-import { createProjectPage, groupByFolder, projectRootForTask } from '../workbench/project-page.js';
+import { createProjectPage, groupByFolder, projectRootForTask } from '../web/project-page.js';
 
 test('folder union retains opaque identities, duplicate records, orphan tasks and default tasks', () => {
   const first = { project_id: 'a', name: 'A' };

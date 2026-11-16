@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { bindComposerKeys, fitComposer, resizeComposers } from '../workbench/composer-controls.js';
+import { bindComposerKeys, fitComposer, resizeComposers } from '../web/composer-controls.js';
 
 function textarea() {
   const computed = { paddingTop: '4px', paddingBottom: '6px', borderTopWidth: '1px', borderBottomWidth: '1px', boxSizing: 'border-box' };

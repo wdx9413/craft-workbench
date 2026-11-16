@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyChangeSetSelection } from '../workbench/change-set-actions.js';
+import { applyChangeSetSelection } from '../web/change-set-actions.js';
 
 test('empty selection never dispatches an apply request', async () => {
   const calls: unknown[] = [], events: string[] = [];

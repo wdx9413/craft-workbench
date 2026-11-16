@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { approvalLabel, argumentTemplate, mountNativeTools } from '../workbench/native-tools-panel.js';
+import { approvalLabel, argumentTemplate, mountNativeTools } from '../web/native-tools-panel.js';
 
 /** A node whose querySelectorAll reads the data attributes the panel just wrote. */
 class Node {

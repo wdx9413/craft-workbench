@@ -302,8 +302,21 @@ html {
 .app[data-rail="icons"] .nav-more .ic { transform: none; }
 .app[data-rail="icons"] .rail-foot { padding: 6px 6px 10px; }
 .app[data-rail="icons"] .rail-foot .nav-item { justify-content: center; }
+/* The status bar already states the connection; a lone dot under the icon rail
+   reads as a rendering artifact rather than information. */
+.app[data-rail="icons"] #rail-status { display: none; }
+/* Icon-only rail: the label is revealed on hover/focus as a page-level chip.
+   It must live outside .rail-scroll, whose overflow would clip it. */
+.rail-tip {
+  position: fixed; z-index: 90; pointer-events: none;
+  padding: 5px 9px; border: var(--hair) solid var(--line); border-radius: 6px;
+  background: var(--bg-surface); color: var(--text); box-shadow: var(--shadow-sm);
+  font-size: 12px; line-height: 16px; white-space: nowrap;
+}
+.rail-tip[hidden] { display: none; }
 .app[data-aside="collapsed"] .workspace { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
 .app[data-aside="collapsed"] .aside { display: none; }
+.app[data-rail="icons"][data-aside="collapsed"] .workspace { grid-template-columns: var(--rail-icons-w) minmax(0, 1fr); }
 .app[data-rail="collapsed"][data-aside="collapsed"] .workspace { grid-template-columns: minmax(0, 1fr); }
 
 /* ---------------------------------------------------------------- titlebar */

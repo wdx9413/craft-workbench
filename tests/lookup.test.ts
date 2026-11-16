@@ -1,7 +1,7 @@
 // V1.4 · fourth incremental coverage gate: pure lookups extracted from app.js.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { operatorOf, taskTitleOf, capNameOf } from '../workbench/lookup.js';
+import { operatorOf, taskTitleOf, capNameOf } from '../web/lookup.js';
 
 test('operatorOf trims a configured operator and signs unattributed otherwise', () => {
   assert.equal(operatorOf({ workbench: { operator: '  用户A  ' } }), '用户A');

@@ -15,7 +15,7 @@ test("Craft Workbench serves the explicitly mounted presentation project", async
   const f = await fixture();
   const repoRoot = path.resolve(import.meta.dirname, "..");
 
-  const app = new WorkbenchWebApp(f.service, "studio-token", "http://127.0.0.1:4173", { workbenchDir: path.join(repoRoot, "workbench") });
+  const app = new WorkbenchWebApp(f.service, "studio-token", "http://127.0.0.1:4173", { workbenchDir: path.join(repoRoot, "web") });
   const index = app.handle({ method: "GET", path: "/workbench" });
   assert.equal(index.status, 200); assert.match(index.contentType, /text\/html/); assert.match(index.body, /Craft Workbench/);
   assert.equal(app.handle({ method: "GET", path: "/workbench/" }).status, 200);
@@ -24,7 +24,7 @@ test("Craft Workbench serves the explicitly mounted presentation project", async
     const rootAsset = app.handle({ method: "GET", path: `/${name}` });
     assert.equal(rootAsset.status, 200);
     assert.deepEqual(rootAsset, app.handle({ method: "GET", path: `/workbench/${name}` }));
-    assert.equal(rootAsset.body, await readFile(path.join(repoRoot, "workbench", name), "utf8"));
+    assert.equal(rootAsset.body, await readFile(path.join(repoRoot, "web", name), "utf8"));
   }
   assert.match(app.handle({ method: "GET", path: "/workbench/app.css" }).body, /--bg-rail/);
   assert.match(app.handle({ method: "GET", path: "/workbench/app.js" }).body, /workbench\/call/);

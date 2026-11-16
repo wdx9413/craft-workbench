@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 // @ts-expect-error Browser module exercised directly.
-import { createContextWorkflowPages } from "../workbench/context-workflows.js";
+import { createContextWorkflowPages } from "../web/context-workflows.js";
 
 function screen() {
   const elements = new Map<string, any>();
