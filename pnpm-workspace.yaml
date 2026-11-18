@@ -10,4 +10,4 @@ allowBuilds:
 
 # Runtime packages are consumed by exact npm versions; no source checkout or
 # local link is recorded in the lockfile.
-minimumReleaseAgeExclude: [ '@craft/capability-codebase@0.20.4', '@craft/capability-datasec@0.1.6', '@craft/capability-experience@0.20.4', '@craft/capability-file-dir-desc@0.20.4', '@craft/capability-knowledge@0.20.4', '@craft/capability-memory@0.20.4', craft-common-base@0.20.4, craft-common-log@0.20.4, craft-common-ontology@0.20.4, craft-common-store-local@0.20.4, craft-eval@0.7.2, craft@0.20.5 ]
+minimumReleaseAgeExclude: [ '@craft/capability-codebase@0.20.5', '@craft/capability-datasec@0.1.7', '@craft/capability-experience@0.20.5', '@craft/capability-file-dir-desc@0.20.5', '@craft/capability-file-dir-desc@0.20.6', '@craft/capability-knowledge@0.20.5', '@craft/capability-memory@0.20.5', craft-common-base@0.20.4, craft-common-log@0.20.4, craft-common-ontology@0.20.5, craft-common-store-local@0.20.4, craft-eval@0.7.3, craft@0.20.5, craft@0.20.6, craft@0.20.7 ]

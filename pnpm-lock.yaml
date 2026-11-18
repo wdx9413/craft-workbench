@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       craft:
-        specifier: 0.20.5
-        version: 0.20.5
+        specifier: 0.20.7
+        version: 0.20.7
     devDependencies:
       playwright-core:
         specifier: ^1.65.0
@@ -89,30 +89,30 @@ packages:
     resolution: {integrity: sha512-Y5tqevQaUAZhhj82BpYMNC1ssvLQTVAfwKdm8iy8qwmhvC2/CpcAu8OC+QEtjM7pMk7knx83u1Qj8gzkicyelw==}
     engines: {node: '>=6.9.0'}
 
-  '@craft/capability-codebase@0.20.4':
-    resolution: {integrity: sha512-QQ8jGCWqj8J6t5PUfnloy9mu913o/OWogdYwNsKJJVlK7M5qTqXbMdXD6/0Fx7fEREObN8/LWmAAihvDeLAE1g==}
+  '@craft/capability-codebase@0.20.5':
+    resolution: {integrity: sha512-IJKvYBZ/G1ZFwOBDXDU6BjdWIIpni5g/xoVDEXptkNqZttflfo5L6pCA/R+lx2+jrkMJ34aSZTXq/qJbCf3wBA==}
     engines: {node: '>=23'}
     peerDependencies:
       typescript: '>=5.8 <7'
 
-  '@craft/capability-datasec@0.1.6':
-    resolution: {integrity: sha512-OrMbwF38qp/r26ImuVWfzphRLmZLB3+h5mL9zpFFaCUxaUCzG3v7yjJEoTXlJq3Wb/TruajcArK4evZFoH0Izg==}
+  '@craft/capability-datasec@0.1.7':
+    resolution: {integrity: sha512-KexO59zjW/zm7mxuSovKsvY1tZwWAA1U6Z4oD9xobxAm1PGXJy1s+CVnWFa0Zk0eVw9OiOoRcdGrdPbebxKXhw==}
     engines: {node: '>=23'}
 
-  '@craft/capability-experience@0.20.4':
-    resolution: {integrity: sha512-dRXXawcehiBx/sK7U8T2jYldpPuiHyWf4cTyZeU+l9+8Wyst94jW73RgaxWJryec2f+Cg2/WkWxuUBoJaJJqKw==}
+  '@craft/capability-experience@0.20.5':
+    resolution: {integrity: sha512-bXixq+GoEvIwYzZgLiJ+kGAYlF8rdDuZ/s2IPRPsrcFGj/tHaImX7k3B8n3/ocNgOmisOapjhvZoyKCLn94dAQ==}
     engines: {node: '>=23'}
 
-  '@craft/capability-file-dir-desc@0.20.4':
-    resolution: {integrity: sha512-ZfHYh6UWkXaQ2dSbVE29vyRCRX6NGKGr/I0DsU6e+Xz9mBC1P5ldthbKlpcXSdMsLzhaRw+vDea4TtYfGVfTyg==}
+  '@craft/capability-file-dir-desc@0.20.6':
+    resolution: {integrity: sha512-epN39MNcd8FigC2CbPLobhxdK5599ouuDT8PSOPOH/QuIg6SOzBDxlnKYpmjlxb/f4UxbL/PP/HjvrvPbhCyTw==}
     engines: {node: '>=23'}
 
-  '@craft/capability-knowledge@0.20.4':
-    resolution: {integrity: sha512-/uyoL5MnkYp2nFi7VJ0mPxHAtnoXO0l12rV5GhmxSTuvfOJ/ZWQQ7S2e6nJInXwjiNfGKE1cx/NzqGA4AvXM7Q==}
+  '@craft/capability-knowledge@0.20.5':
+    resolution: {integrity: sha512-nVnCPQWe2NgfbLGc5DBCrY3sURqVa+0wz3hWufJF7pg1XR1qUDKclTA8qh2XXR5ehla+fLjKZdCGARVh0B0l4w==}
     engines: {node: '>=23'}
 
-  '@craft/capability-memory@0.20.4':
-    resolution: {integrity: sha512-ubBOvyyR+JP/cfC0dl/e70nBVnlbpQv1wQVPFbrrQfA0hO4CYhId7aG4so3tu+EfUhUuTknl8RTnIIxaYc5p1g==}
+  '@craft/capability-memory@0.20.5':
+    resolution: {integrity: sha512-IF2K2ez7/YHn/ufAdumLZkTbRoJtIFSYt3rXwWS/9oBEwxmQmYIwexmh8berX8N3TaEEgHX0GJ6f4l1mSGGnXA==}
     engines: {node: '>=23'}
 
   '@hono/node-server@2.1.8':
@@ -289,21 +289,21 @@ packages:
     resolution: {integrity: sha512-RMoOxNbQmXhK0M2+JJcRbtFgaJMX0CbWsc8LjvO57+6aCJwx+TTjVD2XQva8P4Bo9+jOJGWx5vtswNQL4d3Dvg==}
     engines: {node: '>=23'}
 
-  craft-common-ontology@0.20.4:
-    resolution: {integrity: sha512-5Kqf9F/neeAK6Y3+CRKJIILxsChn4VENeFk8B1a4ZhZpxeCz7CYpTu+500+8wrE7rhH+WJiRXFmuDDu8DpMYHQ==}
+  craft-common-ontology@0.20.5:
+    resolution: {integrity: sha512-0Ra47KT4hl2k7rKrymDDHqFzlkm/BN6pFFYS7VY2D7vxksbto/eDL5CSt/J7GjUfdkFtkw31Hp/P4V3Rjnw+lQ==}
     engines: {node: '>=23'}
 
   craft-common-store-local@0.20.4:
     resolution: {integrity: sha512-lGlLr8PIThQPVkRa5MQiNiIvNOdT6UxQVeGUB01jKQPTaWeNhhceMUDok6OK0mtn9cYIXcakpOSg0Ey2I3oeTA==}
     engines: {node: '>=23'}
 
-  craft-eval@0.7.2:
-    resolution: {integrity: sha512-RPo+QrnpNvldI+1ARQ7/p1ZoVQ9OPH970DTyb7z9AxgO3a8zUkshfzDJAzTvRH9AuCoffiojrTDBp1j5qeqeeA==}
+  craft-eval@0.7.3:
+    resolution: {integrity: sha512-ZiSSmPIWfy3x37asWwiSdcAhWpNCUfpiTH3E99vyArsdxSeas30ww8XwA1NNWI2tMYo9PgbK7WBwwgTcA5Lcag==}
     engines: {node: '>=22'}
     hasBin: true
 
-  craft@0.20.5:
-    resolution: {integrity: sha512-kI04E1V27mVxbwm4Gm5DasqhC+y4eKCi7lkuorI5qAgJnYoT/uvbSQVPcX/JQwOjZsfL7pCwBZsyHSXnHCgF5A==}
+  craft@0.20.7:
+    resolution: {integrity: sha512-oLPECwEyEvx0RaweojWxEcJPBjES118/qB/o1EVrBy4i/chYBUDnDVLzgwDAfH4+Z1AvJuzBB+sclhR4ETplmQ==}
     engines: {node: '>=23'}
     hasBin: true
 
@@ -735,41 +735,41 @@ snapshots:
 
   '@babel/runtime@7.29.14': {}
 
-  '@craft/capability-codebase@0.20.4(typescript@6.0.3)':
+  '@craft/capability-codebase@0.20.5(typescript@6.0.3)':
     dependencies:
       craft-common-base: 0.20.4
       craft-common-log: 0.20.4
       craft-common-store-local: 0.20.4
       typescript: 6.0.3
 
-  '@craft/capability-datasec@0.1.6': {}
+  '@craft/capability-datasec@0.1.7': {}
 
-  '@craft/capability-experience@0.20.4':
+  '@craft/capability-experience@0.20.5':
     dependencies:
-      '@craft/capability-knowledge': 0.20.4
+      '@craft/capability-knowledge': 0.20.5
       craft-common-base: 0.20.4
       craft-common-log: 0.20.4
-      craft-common-ontology: 0.20.4
+      craft-common-ontology: 0.20.5
       craft-common-store-local: 0.20.4
 
-  '@craft/capability-file-dir-desc@0.20.4':
+  '@craft/capability-file-dir-desc@0.20.6':
     dependencies:
       craft-common-base: 0.20.4
       craft-common-store-local: 0.20.4
 
-  '@craft/capability-knowledge@0.20.4':
+  '@craft/capability-knowledge@0.20.5':
     dependencies:
-      '@craft/capability-memory': 0.20.4
-      craft-common-base: 0.20.4
-      craft-common-log: 0.20.4
-      craft-common-ontology: 0.20.4
-      craft-common-store-local: 0.20.4
-
-  '@craft/capability-memory@0.20.4':
-    dependencies:
+      '@craft/capability-memory': 0.20.5
       craft-common-base: 0.20.4
       craft-common-log: 0.20.4
-      craft-common-ontology: 0.20.4
+      craft-common-ontology: 0.20.5
+      craft-common-store-local: 0.20.4
+
+  '@craft/capability-memory@0.20.5':
+    dependencies:
+      craft-common-base: 0.20.4
+      craft-common-log: 0.20.4
+      craft-common-ontology: 0.20.5
       craft-common-store-local: 0.20.4
 
   '@hono/node-server@2.1.8(hono@4.13.19)':
@@ -935,31 +935,36 @@ snapshots:
       craft-common-base: 0.20.4
       craft-common-store-local: 0.20.4
 
-  craft-common-ontology@0.20.4: {}
+  craft-common-ontology@0.20.5: {}
 
   craft-common-store-local@0.20.4: {}
 
-  craft-eval@0.7.2:
+  craft-eval@0.7.3:
     dependencies:
+      '@craft/capability-datasec': 0.1.7
+      '@craft/capability-experience': 0.20.5
+      '@craft/capability-knowledge': 0.20.5
+      '@craft/capability-memory': 0.20.5
       craft-common-base: 0.20.4
+      craft-common-ontology: 0.20.5
       craft-common-store-local: 0.20.4
 
-  craft@0.20.5:
+  craft@0.20.7:
     dependencies:
       '@anthropic-ai/claude-agent-sdk': 0.3.312(@anthropic-ai/sdk@1.3.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.2)(zod@4.6.7)
       '@anthropic-ai/sdk': 1.3.0(zod@4.6.7)
-      '@craft/capability-codebase': 0.20.4(typescript@6.0.3)
-      '@craft/capability-datasec': 0.1.6
-      '@craft/capability-experience': 0.20.4
-      '@craft/capability-file-dir-desc': 0.20.4
-      '@craft/capability-knowledge': 0.20.4
-      '@craft/capability-memory': 0.20.4
+      '@craft/capability-codebase': 0.20.5(typescript@6.0.3)
+      '@craft/capability-datasec': 0.1.7
+      '@craft/capability-experience': 0.20.5
+      '@craft/capability-file-dir-desc': 0.20.6
+      '@craft/capability-knowledge': 0.20.5
+      '@craft/capability-memory': 0.20.5
       '@modelcontextprotocol/sdk': 1.32.2
       craft-common-base: 0.20.4
       craft-common-log: 0.20.4
-      craft-common-ontology: 0.20.4
+      craft-common-ontology: 0.20.5
       craft-common-store-local: 0.20.4
-      craft-eval: 0.7.2
+      craft-eval: 0.7.3
       quickjs-emscripten: 0.32.0
       tesseract.js: 7.0.0
       typescript: 6.0.3

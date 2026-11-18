@@ -36,7 +36,7 @@
     "test:coverage:frozen-verification": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=web/work-review-verification-ui.js tests/work-review-verification-ui.test.ts"
   },
   "dependencies": {
-    "craft": "0.20.5"
+    "craft": "0.20.7"
   },
   "devDependencies": {
     "playwright-core": "^1.65.0"
