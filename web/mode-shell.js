@@ -40,9 +40,9 @@ export const MODES = {
     // `nav` is the routable set (deep links and guards). `rail` + `more` are the
     // visible projection: frequent work stays in the rail, low-frequency
     // governance/observation pages live behind one disclosure.
-    nav: ['home', 'overview', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'filedir', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
+    nav: ['home', 'overview', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'notes', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
     rail: ['home', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows'],
-    more: ['overview', 'mods', 'filedir', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations'],
+    more: ['overview', 'mods', 'notes', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations'],
     home: 'home'
   },
   control: {

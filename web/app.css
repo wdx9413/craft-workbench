@@ -1028,6 +1028,7 @@ html {
 .row:hover .row-actions { opacity: 1; }
 .row:focus-within .row-actions { opacity: 1; }
 .row-current .row-actions { opacity: 1; }
+.notes-edit { width: 100%; min-height: 58px; margin-top: 8px; }
 @media (hover: none), (pointer: coarse) { .row-actions { opacity: 1; } }
 
 /* A form rendered inline inside a card body (not inside a .row) must stay
@@ -2102,6 +2103,8 @@ border-radius: 50%;
 .memory-graph-list li { display: flex; flex-direction: column; max-width: min(100%, 280px); gap: 3px; }
 .memory-graph-list .btn { overflow-wrap: anywhere; white-space: normal; text-align: left; }
 .plugin-context-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border: var(--hair) solid var(--line); border-radius: 10px; background: var(--bg-surface); }
+.mod-ui-contribution { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 9px; border: var(--hair) solid var(--line); border-radius: 8px; background: var(--bg-surface); }
+.mod-ui-contribution p { margin: 0; }
 .plugin-context-actions[hidden] { display: none; }
 
 /* ---------------------------------------------------------- settings shell */

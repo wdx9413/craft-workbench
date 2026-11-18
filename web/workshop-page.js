@@ -37,6 +37,7 @@ export function createWorkshopPage(ctx) {
             var bindings = (results[2] && results[2].bindings) || [];
             var contributionHost = root.querySelector('#plugin-context-actions');
             var contributions = (results[3] && results[3].contributions) || [];
+            var modContributions = (results[3] && results[3].mod_contributions) || [];
             var actions = contributions.flatMap(function (item) { return (item.context_actions || []).map(function (action) {
               return { plugin: item.source, title: action.title, target: action.target };
             }); });
@@ -50,6 +51,56 @@ export function createWorkshopPage(ctx) {
                 button.onclick = function () { var action = actions[Number(button.getAttribute('data-plugin-context-action'))]; if (action) go(action.target); };
               });
             }
+            modContributions.forEach(function (item) {
+              var contribution = item.contribution || {};
+              var insertionPoint = String(contribution.insertion_point || '');
+              var target = insertionPoint === 'composer_toolbar' ? agentRoot.querySelector('.agent-compose-actions')
+                : insertionPoint === 'task_context' ? contributionHost
+                  : insertionPoint === 'project_sidebar' ? root.querySelector('#project-sidebar, .project-sidebar')
+                    : insertionPoint === 'task_header' ? agentRoot.querySelector('.agent-workspace-header, .agent-head') : null;
+              if (!target) {
+                if (contributionHost) {
+                  contributionHost.hidden = false;
+                  var unsupported = host.document.createElement('p');
+                  unsupported.className = 'aside-note';
+                  unsupported.textContent = 'Mod「' + String(item.mod_name || item.mod_id) + '」的「' + insertionPoint + '」位置在当前页面不可用。';
+                  contributionHost.appendChild(unsupported);
+                }
+                return;
+              }
+              var panel = host.document.createElement('div');
+              panel.className = 'mod-ui-contribution';
+              panel.setAttribute('data-mod-id', String(item.mod_id));
+              panel.setAttribute('data-contribution-id', String(contribution.id));
+              panel.setAttribute('aria-label', 'Mod 提供的 ' + insertionPoint + ' 内容');
+              var heading = host.document.createElement('b');
+              heading.textContent = String(item.mod_name || item.mod_id);
+              panel.appendChild(heading);
+              (Array.isArray(contribution.layout) ? contribution.layout : []).forEach(function (control) {
+                var kind = String(control.type || '');
+                if (kind === 'text' || kind === 'status') {
+                  var label = host.document.createElement(kind === 'status' ? 'span' : 'p');
+                  label.className = kind === 'status' ? 'pill' : 'aside-note';
+                  label.textContent = String(control.label || '');
+                  panel.appendChild(label);
+                } else if (kind === 'button') {
+                  var button = host.document.createElement('button');
+                  button.className = 'btn sm'; button.type = 'button'; button.textContent = String(control.label || '打开');
+                  button.setAttribute('data-mod-action', String(control.action_id || ''));
+                  button.onclick = function () {
+                    if (!host.crypto || typeof host.crypto.randomUUID !== 'function') { toast('此环境无法安全提交 Mod 操作', true); return; }
+                    button.disabled = true;
+                    api('/api/workbench/mods/' + encodeURIComponent(item.mod_id) + '/contributions/' + encodeURIComponent(contribution.id) + '/actions/' + encodeURIComponent(control.action_id), {
+                      method: 'POST', body: { workspace_id: workspaceId, request_id: host.crypto.randomUUID() }
+                    }).then(function () { toast('Mod 操作已通过 Craft Runtime 处理'); })
+                      .catch(function (error) { toast('Mod 操作未执行：' + String(error && error.message || error), true); })
+                      .finally(function () { button.disabled = false; });
+                  };
+                  panel.appendChild(button);
+                }
+              });
+              target.appendChild(panel);
+            });
             var advancedHost = root.querySelector('#plugin-advanced-tools');
             var advancedTools = contributions.flatMap(function (item) { return (item.advanced_tools || []).map(function (tool) {
               return { plugin: item.source, pluginId: item.plugin_id, id: tool.id, title: tool.title, tool: tool.tool, supported: tool.supported === true };

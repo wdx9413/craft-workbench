@@ -480,7 +480,7 @@ import { icon, esc, pill, shortTime, label, fromLabel, statusPill, changeSetStat
     { key: 'knowledge', group: '上下文', label: '知识', title: '知识', sub: '将 Markdown、JSON 和可核验结论组织成知识库', icon: 'layers', view: viewKnowledge },
     { key: 'workflows', group: '上下文', label: '经验', title: '经验', sub: '从真实运行沉淀出的可复用经验：草稿、Procedure 与已导出的技能', icon: 'refresh', view: resourcePages.workflows },
     { key: 'mods', group: '上下文', label: '认知约束', title: '认知约束', sub: 'Mod：注入 Worker/Reviewer 上下文的行为规范，需批准才生效', icon: 'layers', view: modPages.mods },
-    { key: 'filedir', group: '上下文', label: '目录语义', title: '目录语义', sub: '目录 ↔ 语义描述双向检索，用过才存、常用才转正', icon: 'folder', view: modPages.filedir },
+    { key: 'notes', group: '上下文', label: 'Craft Notes', title: 'Craft Notes', sub: '设备说明必填；目录与文件备注经证据候选和人工确认后参与检索', icon: 'folder', view: modPages.notes },
     { key: 'relations', group: '上下文', label: '关系健康', title: '代码关系健康', sub: '索引完成情况；外部引用与内部关系缺口分开统计，只有后者是缺陷', icon: 'layers', view: modPages.relations },
     { key: 'evolution', group: '任务治理', label: '自进化观察室', title: '自进化观察室', sub: 'Agent 最近总结了什么：Mod 候选、影子测试与插件发现提案', icon: 'refresh', view: modPages.evolution },
     { key: 'blocked', group: '任务治理', label: '异常阻塞队列', title: '异常阻塞队列', sub: 'Worker/Reviewer 超过 3 轮被硬中断的任务，核对后解除熔断', icon: 'alert', view: modPages.blocked },

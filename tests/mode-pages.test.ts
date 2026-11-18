@@ -94,6 +94,40 @@ test('viewHome exposes plugin context actions and terminal events for real run d
   assert.match(terminal.textContent, /\[t1\] start · ok/u);
 });
 
+test('viewHome mounts trusted Mod UI at its declared insertion point and sends button actions through Runtime', async () => {
+  const children = [];
+  const contributionHost = { hidden: true, innerHTML: '', children, appendChild(node) { children.push(node); }, querySelectorAll: () => [] };
+  const calls = [];
+  const makeNode = (tag) => ({ tag, children: [], attrs: {}, setAttribute(key, value) { this.attrs[key] = value; }, appendChild(node) { this.children.push(node); } });
+  const document = { createElement: makeNode };
+  const pages = createModePages(context({
+    state: { page: 'home', settings: null, composer: { folder: 'ws-1' }, execution: {}, folderGroups: [] },
+    host: { document, crypto: { randomUUID: () => 'request-1' }, setTimeout: () => 0, clearTimeout: () => {} },
+    api: (path, options) => {
+      calls.push({ path, options });
+      if (path.includes('/contributions')) return Promise.resolve({ contributions: [], mod_contributions: [{
+        mod_id: 'trusted-mod', mod_name: 'Context helper', contribution: { id: 'context-actions', insertion_point: 'task_context',
+          layout: [{ type: 'text', id: 'label', label: '辅助操作' }, { type: 'button', id: 'read', label: '查看', action_id: 'info' }] }
+      }] });
+      return Promise.resolve({ items: [], bindings: [], mods: [] });
+    },
+  }));
+  const view = await pages.viewHome();
+  view.mounts[0]({ querySelector: (selector) => selector === '#agent-workspace' ? {} : selector === '#session-toolbar' ? { innerHTML: '' }
+    : selector === '#plugin-context-actions' ? contributionHost : selector === '#terminal-out' ? { textContent: '' } : null });
+  await new Promise(setImmediate);
+  const panel = children.find((item) => item.className === 'mod-ui-contribution');
+  assert.ok(panel);
+  const button = panel.children.find((item) => item.tag === 'button');
+  assert.equal(button.textContent, '查看');
+  button.onclick();
+  await new Promise(setImmediate);
+  const action = calls.find((item) => item.path.includes('/contributions/context-actions/actions/info'));
+  assert.ok(action);
+  assert.equal(action.options.body.request_id, 'request-1');
+  assert.equal(action.options.body.workspace_id, 'ws-1');
+});
+
 test('viewHome terminal reports unavailable host-run detail and unmounts a Mod globally', async () => {
   const unmountMod = { getAttribute: () => 'm1', onclick: null as null | (() => void) };
   const toolbar = { innerHTML: '', querySelectorAll: (selector: string) =>

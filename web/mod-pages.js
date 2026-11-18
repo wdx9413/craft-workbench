@@ -256,6 +256,91 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
     });
   }
 
+  function viewCraftNotes() {
+    return Promise.all([
+      api('/api/workbench/notes/devices?limit=100'),
+      api('/api/workbench/notes/candidates?limit=100')
+    ]).then(function (results) {
+      var devices = (results[0] && results[0].items) || [];
+      var candidates = (results[1] && results[1].items) || [];
+      var deviceOptions = devices.map(function (item) { return '<option value="' + esc(item.id) + '">' + esc(item.name || item.id) + '</option>'; }).join('');
+      var deviceRows = devices.map(function (item) {
+        return '<div class="row"><span class="row-lead muted">' + icon('cpu') + '</span><div class="row-main">' +
+          rowTitle(item.name || item.id) + '<span class="row-sub">' + esc(item.id) + ' · ' + esc(item.deviceKind || 'local') + ' · ' + esc(item.deviceNote || '缺少设备说明') + '</span></div></div>';
+      }).join('');
+      var candidateRows = candidates.map(function (item) {
+        var label = item.subject_type === 'device' ? '设备' : item.subject_type === 'file' ? '文件' : '目录';
+        var evidence = (item.evidence_refs || []).length ? (item.evidence_refs || []).length + ' 条任务使用证据' : '人工固定，待确认';
+        return '<div class="row"><span class="row-lead muted">' + icon(item.subject_type === 'file' ? 'file' : 'folder') + '</span><div class="row-main">' +
+          rowTitle(item.subject_key || item.id) + '<span class="row-sub">' + label + ' · ' + esc(item.status) + ' · ' + esc(evidence) + (item.freshness ? ' · ' + esc(item.freshness) : '') + '</span>' +
+          '<textarea class="notes-edit" data-note-text="' + esc(item.id) + '" aria-label="编辑备注">' + esc(item.text || '') + '</textarea>' +
+          '<div class="row-actions"><button class="btn sm primary" type="button" data-note-confirm="' + esc(item.id) + '" data-note-version="' + Number(item.version || 1) + '">确认并启用</button>' +
+          '<button class="btn sm danger" type="button" data-note-revoke="' + esc(item.id) + '" data-note-version="' + Number(item.version || 1) + '">撤销</button></div></div></div>';
+      }).join('');
+      var form = '<div class="field-row"><div class="field"><label for="notes-device-id">设备 ID</label><input id="notes-device-id" placeholder="laptop-1"></div>' +
+        '<div class="field"><label for="notes-device-name">设备名称</label><input id="notes-device-name" placeholder="主力开发机"></div></div>' +
+        '<div class="field"><label for="notes-device-note">设备说明（必填）</label><textarea id="notes-device-note" placeholder="例如：主力开发机，运行本地模型和代理"></textarea></div>' +
+        '<button class="btn primary" id="notes-device-create" type="button">登记设备</button>' +
+        '<div class="field-row"><div class="field"><label for="notes-target-device">备注所属设备</label><select id="notes-target-device">' + (deviceOptions || '<option value="local">本机</option>') + '</select></div></div>' +
+        '<div class="field-row"><div class="field"><label for="notes-directory-path">重要目录路径</label><input id="notes-directory-path" placeholder="/work/core"></div>' +
+        '<div class="field"><label for="notes-directory-text">目录备注</label><input id="notes-directory-text" placeholder="核心后端架构文档"></div></div>' +
+        '<button class="btn" id="notes-directory-create" type="button">提交目录备注供确认</button>' +
+        '<div class="field-row"><div class="field"><label for="notes-file-path">重要文件路径</label><input id="notes-file-path" placeholder="/work/config/prod.yaml"></div>' +
+        '<div class="field"><label for="notes-file-text">文件备注</label><input id="notes-file-text" placeholder="生产环境只读配置，切勿修改"></div></div>' +
+        '<button class="btn" id="notes-file-create" type="button">提交文件备注供确认</button>';
+      return {
+        html: '<div class="stack"><div class="card">' + head('Craft Notes', '为设备补充必填说明；目录和文件备注只在证据充分或手动固定后进入待确认队列。', form) +
+          '<div class="card-body"><h3 class="section-title">设备说明</h3><div class="rows">' + (deviceRows || emptyState('还没有已登记设备', '登记设备时填写一段用途说明。', 'cpu')) +
+          '</div><h3 class="section-title">待确认备注</h3><div class="rows">' + (candidateRows || emptyState('没有待确认备注', '目录和文件备注需要人工确认后才参与默认检索。', 'folder')) + '</div></div></div></div>',
+        mounts: [function (root) {
+          var create = root.querySelector('#notes-device-create');
+          if (create) create.onclick = function () {
+            var id = val('notes-device-id'), name = val('notes-device-name'), note = val('notes-device-note');
+            if (!id || !note) { toast('设备 ID 和设备说明必填', true); return; }
+            create.disabled = true;
+            api('/api/workbench/notes/devices', { method: 'POST', body: { id: id, name: name || id, note: note } })
+              .then(function () { toast('设备说明已保存'); paint('notes'); }).catch(function (error) { create.disabled = false; fail(error); });
+          };
+          var directoryCreate = root.querySelector('#notes-directory-create');
+          if (directoryCreate) directoryCreate.onclick = function () {
+            var path = val('notes-directory-path'), note = val('notes-directory-text');
+            if (!path || !note) { toast('目录路径和备注必填', true); return; }
+            directoryCreate.disabled = true;
+            api('/api/workbench/notes/observe-directory', { method: 'POST', body: { path: path, note: note,
+              device_id: val('notes-target-device') || 'local', pin: true } })
+              .then(function () { toast('目录备注已加入待确认列表'); paint('notes'); }).catch(function (error) { directoryCreate.disabled = false; fail(error); });
+          };
+          var fileCreate = root.querySelector('#notes-file-create');
+          if (fileCreate) fileCreate.onclick = function () {
+            var path = val('notes-file-path'), note = val('notes-file-text');
+            if (!path || !note) { toast('文件路径和备注必填', true); return; }
+            fileCreate.disabled = true;
+            api('/api/workbench/notes/observe-file', { method: 'POST', body: { path: path, note: note,
+              device_id: val('notes-target-device') || 'local', pin: true } })
+              .then(function () { toast('文件备注已加入待确认列表；未读取文件内容'); paint('notes'); }).catch(function (error) { fileCreate.disabled = false; fail(error); });
+          };
+          root.querySelectorAll('[data-note-confirm]').forEach(function (button) {
+            button.onclick = function () {
+              var id = button.getAttribute('data-note-confirm'), field = root.querySelector('[data-note-text="' + id + '"]');
+              button.disabled = true;
+              api('/api/workbench/notes/' + encodeURIComponent(id) + '/confirm', { method: 'POST', body: { expected_version: Number(button.getAttribute('data-note-version')), note: field ? field.value : undefined } })
+                .then(function () { toast('备注已确认并启用'); paint('notes'); }).catch(function (error) { button.disabled = false; fail(error); });
+            };
+          });
+          root.querySelectorAll('[data-note-revoke]').forEach(function (button) {
+            button.onclick = function () {
+              var id = button.getAttribute('data-note-revoke'), reason = ask('撤销原因（必填）');
+              if (reason === null) return;
+              if (!String(reason).trim()) { toast('撤销原因必填', true); return; }
+              api('/api/workbench/notes/' + encodeURIComponent(id) + '/revoke', { method: 'POST', body: { expected_version: Number(button.getAttribute('data-note-version')), revoked_by: operatorOf(), reason: String(reason).trim() } })
+                .then(function () { toast('备注已撤销'); paint('notes'); }).catch(fail);
+            };
+          });
+        }]
+      };
+    });
+  }
+
   function viewOnboarding() {
     return api('/api/settings').then(function (result) {
       var done = result && result.workbench && result.workbench.onboarding;
@@ -501,6 +586,6 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
     });
   }
 
-  return { mods: viewMods, filedir: viewFileDirDesc, onboard: viewOnboarding, modeConfirm: viewModeConfirm,
+  return { mods: viewMods, filedir: viewFileDirDesc, notes: viewCraftNotes, onboard: viewOnboarding, modeConfirm: viewModeConfirm,
     evolution: viewEvolution, blocked: viewBlockedQueue, relations: viewRelations };
 }
