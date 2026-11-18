@@ -358,10 +358,18 @@ export function createResourcePages({ api, presentation, editors, refresh, notif
               '<button class="btn sm" type="button" data-exp-trend="' + esc(String(item.id)) + '">趋势</button>' +
               '<pre class="out" data-recall-audit-list hidden></pre><pre class="out" data-weight-trend-list hidden></pre></div>' + (item.routeable ? feedbackButtons('experience', item.id) : '') + '</div>';
           }).join('');
+          var runbookRows = (overview.runbook_candidates || []).map(function (item) {
+            return '<div class="row"><span class="row-lead muted">' + icon('file') + '</span><div class="row-main"><span class="row-title">' + esc(item.title || item.id) + '</span>' +
+              '<span class="row-sub">待验证 · ' + esc(item.scope) + ' · 来源 ' + esc(item.observation_id) + ' · 证据 ' + esc(String((item.evidence_ids || []).length)) + ' 条</span>' +
+              '<details class="row-confirm"><summary class="btn sm">查看内容</summary><div class="stack"><pre class="out">' + esc(item.body || '') + '</pre></div></details></div>' +
+              '<div class="row-actions"><select data-runbook-reason="' + esc(item.id) + '"><option value="not_reusable">不适合复用</option><option value="unsafe_content">内容不安全</option><option value="incorrect">内容不正确</option><option value="duplicate">重复</option><option value="other">其他</option></select>' +
+              '<button class="btn sm danger" type="button" data-runbook-revoke="' + esc(item.id) + '" data-runbook-version="' + esc(String(item.version)) + '">撤销候选</button></div></div>';
+          }).join('');
           tierCard = captureForm(false) +
             section('经验 · 草稿（来自经验系统）', '由「沉淀这次成果」或自动捕获生成的草稿', draftRows, (overview.drafts || []).length) +
             '<div class="grid-2">' + section('经验 · 观察与模式', '仅诊断，不进入执行', observationRows + patternRows, (overview.observations || []).length + (overview.patterns || []).length) +
-            section('经验 · 资产', '通过门槛后才可召回', procedureRows, (overview.procedures || []).length) + '</div>';
+            section('经验 · 资产', '通过门槛后才可召回', procedureRows, (overview.procedures || []).length) + '</div>' +
+            section('经验 · Runbook 候选', '单次验证只提供同项目待验证提示，不会执行；检查来源后可撤销', runbookRows, (overview.runbook_candidates || []).length);
         } else {
           // The tier read failed, but capture does not depend on it: the entry
           // must survive a failed read instead of disappearing with it.
@@ -423,6 +431,18 @@ export function createResourcePages({ api, presentation, editors, refresh, notif
           });
           bindRecallAudit(root, { api, attribute: 'data-exp-audit', member: 'experience' });
           bindWeightTrend(root, { api, attribute: 'data-exp-trend', member: 'experience' });
+          root.querySelectorAll('[data-runbook-revoke]').forEach(function (button) {
+            button.onclick = function () {
+              if (button.disabled || !window.confirm('撤销这条 Runbook 候选？它将不再进入项目 Context。')) return;
+              var id = button.getAttribute('data-runbook-revoke'), version = Number(button.getAttribute('data-runbook-version'));
+              var row = button.closest('.row'), reason = row && row.querySelector('[data-runbook-reason]');
+              if (!id || !Number.isSafeInteger(version) || !reason) return;
+              button.disabled = true;
+              api('/api/workbench/experience/runbooks/revoke', { method: 'POST', body: { procedure_id: id, expected_version: version, reason: reason.value } })
+                .then(function () { notify('Runbook 候选已撤销'); paint('workflows'); })
+                .catch(function (error) { button.disabled = false; fail(error); });
+            };
+          });
           // Confirming keeps the ranking penalty; dismissing removes it. Either
           // way it is an explicit, attributed decision, never a silent rewrite.
           root.querySelectorAll('[data-correction-decide]').forEach(function (button) {

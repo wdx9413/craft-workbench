@@ -163,8 +163,8 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
     });
   }
 
-  function viewFileDirDesc() {
-    return api('/api/workbench/file-dir-desc/list?limit=200').then(function (result) {
+  function viewCraftNotesLocation() {
+    return api('/api/workbench/notes/locations/list?limit=200').then(function (result) {
       var items = (result && result.items) || [];
       var rows = items.length ? items.map(function (item) {
         // NEEDREAD 16 (目录语义): correction, relocation and withdrawal are
@@ -200,11 +200,11 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
             if (!path || !desc) { toast('路径与描述都必填', true); return; }
             recordBtn.disabled = true;
             var repo = val('desc-repo');
-            api('/api/workbench/file-dir-desc/record', { method: 'POST', body: {
+            api('/api/workbench/notes/locations/record', { method: 'POST', body: {
               device_id: val('desc-device') || 'local', device_kind: val('desc-device-kind') || 'local',
               path: path, description: desc, host_kind: val('desc-host') || 'local',
               ...(repo ? { repo_identity: { remote_url: repo } } : {}) } })
-              .then(function () { toast('位置已记录'); paint('filedir'); recordBtn.disabled = false; }).catch(function (e) { recordBtn.disabled = false; fail(e); });
+              .then(function () { toast('位置已记录'); paint('notes-locations'); recordBtn.disabled = false; }).catch(function (e) { recordBtn.disabled = false; fail(e); });
           };
           var searchBtn = root.querySelector('#desc-search');
           if (searchBtn) searchBtn.onclick = function () {
@@ -212,7 +212,7 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
             if (!query) { toast('请输入描述关键词', true); return; }
             searchBtn.disabled = true;
             var device = val('desc-query-device');
-            api('/api/workbench/file-dir-desc/resolve?description=' + encodeURIComponent(query) + '&limit=10' + (device ? '&device_id=' + encodeURIComponent(device) : ''))
+            api('/api/workbench/notes/locations/resolve?description=' + encodeURIComponent(query) + '&limit=10' + (device ? '&device_id=' + encodeURIComponent(device) : ''))
               .then(function (res) {
                 var results = (res && res.results) || [];
                 var pre = root.querySelector('#desc-result');
@@ -223,8 +223,8 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
           root.querySelectorAll('[data-desc-promote]').forEach(function (button) {
             button.onclick = function () {
               var id = button.getAttribute('data-desc-promote');
-              api('/api/workbench/file-dir-desc/promote', { method: 'POST', body: { id: id } })
-                .then(function () { toast('目录已提升为正式'); paint('filedir'); }).catch(fail);
+              api('/api/workbench/notes/locations/promote', { method: 'POST', body: { id: id } })
+                .then(function () { toast('目录已提升为正式'); paint('notes-locations'); }).catch(fail);
             };
           });
           root.querySelectorAll('[data-desc-relocate]').forEach(function (button) {
@@ -233,8 +233,8 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
               var next = ask('目录的新绝对路径（取消则不动）');
               if (!next || !String(next).trim()) return;
               button.disabled = true;
-              api('/api/workbench/file-dir-desc/relocate', { method: 'POST', body: { id: id, path: String(next).trim() } })
-                .then(function () { toast('目录已搬迁，使用次数与描述保留'); paint('filedir'); })
+              api('/api/workbench/notes/locations/relocate', { method: 'POST', body: { id: id, path: String(next).trim() } })
+                .then(function () { toast('目录已搬迁，使用次数与描述保留'); paint('notes-locations'); })
                 .catch(function (error) { button.disabled = false; fail(error); });
             };
           });
@@ -245,9 +245,9 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
               if (reason === null) return;
               if (!String(reason).trim()) { toast('撤销必须写原因', true); return; }
               button.disabled = true;
-              api('/api/workbench/file-dir-desc/revoke', { method: 'POST', body: {
+              api('/api/workbench/notes/locations/revoke', { method: 'POST', body: {
                 id: id, revoked_by: operatorOf(), reason: String(reason).trim() } })
-                .then(function () { toast('已撤销；如需恢复请手动提升为正式'); paint('filedir'); })
+                .then(function () { toast('已撤销；如需恢复请手动提升为正式'); paint('notes-locations'); })
                 .catch(function (error) { button.disabled = false; fail(error); });
             };
           });
@@ -586,6 +586,6 @@ export function createModPages({ api, presentation, notify, fail, ask, operator,
     });
   }
 
-  return { mods: viewMods, filedir: viewFileDirDesc, notes: viewCraftNotes, onboard: viewOnboarding, modeConfirm: viewModeConfirm,
+  return { mods: viewMods, 'notes-locations': viewCraftNotesLocation, notes: viewCraftNotes, onboard: viewOnboarding, modeConfirm: viewModeConfirm,
     evolution: viewEvolution, blocked: viewBlockedQueue, relations: viewRelations };
 }

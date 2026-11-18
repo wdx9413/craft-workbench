@@ -22,7 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MODES = {
   pilot: ['pilot'],
   control: ['tasks', 'approvals', 'subscriptions', 'objects', 'permissions', 'mods', 'executors', 'evolution', 'blocked', 'mode-confirm', 'settings'],
-  workshop: ['home', 'overview', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'filedir', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
+  workshop: ['home', 'overview', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'notes-locations', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
 };
 
 function buildUrl(token, mode, page) {

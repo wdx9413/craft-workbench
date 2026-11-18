@@ -266,6 +266,38 @@ test('the scoped experience page shows drafts, observations, patterns and assets
   assert.match(status.textContent, /已沉淀/);
 });
 
+test('the scoped experience page renders Runbook source content and posts a version-bound revoke', async () => {
+  const calls: Array<{ path: string; body?: unknown }> = [], notices: string[] = [];
+  const oldWindow = (globalThis as { window?: unknown }).window;
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { confirm: () => true } });
+  try {
+    // This endpoint is returned by the current project's overview.
+    const data = { scope: 'project:demo', drafts: [], observations: [], patterns: [], procedures: [],
+      runbook_candidates: [{ id: 'runbook-1', version: 3, title: 'Browser handoff', scope: 'project:demo', observation_id: 'obs-1', evidence_ids: ['e1'], body: 'Use about:blank before a new task.' }] };
+    const rendered = createResourcePages({
+      api: async (path: string, init?: { method?: string; body?: unknown }) => { calls.push({ path, body: init?.body }); return path.startsWith('/api/workbench/experience/overview') ? data : {}; },
+      presentation: { icon: (n: string) => `<svg>${n}</svg>`, esc: (value: unknown) => String(value ?? '').replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+        head: (t: string) => `<h2>${t}</h2>`, emptyState: (t: string) => `<p>${t}</p>`, asideBlock: () => '', catalogRows: () => '', countChip: (n: number) => String(n),
+        label: (_l: unknown, _s: unknown, f: unknown) => f, STATUS_LABELS: {}, shortTime: () => '', pill: (t: string) => `<span>${t}</span>` },
+      editors: { memory: () => {}, workflow: () => {} }, refresh: () => {}, notify: (m: string) => { notices.push(m); }, fail: (e: Error) => { throw e; },
+      scope: () => 'project:demo',
+    });
+    const runbookView = await rendered.workflows();
+    assert.ok(runbookView.html.includes('Runbook 候选'));
+    assert.ok(runbookView.html.includes('来源 obs-1'));
+    assert.ok(runbookView.html.includes('Use about:blank before a new task.'));
+    const revoke = { disabled: false, getAttribute: (name: string) => name === 'data-runbook-revoke' ? 'runbook-1' : '3',
+      closest: () => ({ querySelector: () => ({ value: 'duplicate' }) }), onclick: undefined as (() => void) | undefined };
+    runbookView.mounts[0]({ querySelector: () => null, querySelectorAll: (selector: string) => selector === '[data-runbook-revoke]' ? [revoke] : [] });
+    revoke.onclick!(); await flush();
+    assert.deepEqual(calls.at(-1), { path: '/api/workbench/experience/runbooks/revoke', body: { procedure_id: 'runbook-1', expected_version: 3, reason: 'duplicate' } });
+    assert.deepEqual(notices, ['Runbook 候选已撤销']);
+  } finally {
+    if (oldWindow === undefined) delete (globalThis as { window?: unknown }).window;
+    else Object.defineProperty(globalThis, 'window', { configurable: true, value: oldWindow });
+  }
+});
+
 test('a routeable asset can report a recall, and a cancelled prompt sends nothing', async () => {
   const esc = (value: unknown) => String(value ?? '').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   const calls: Array<{ path: string; body?: unknown }> = [];

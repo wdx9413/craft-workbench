@@ -134,7 +134,7 @@ test('Pilot thread identity survives reload without trusting arbitrary localStor
 });
 
 test('modeNavKeys returns keys or empty array', () => {
-  assert.deepEqual(modeNavKeys('workshop'), ['home', 'overview', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'filedir', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings']);
+  assert.deepEqual(modeNavKeys('workshop'), ['home', 'overview', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'mods', 'notes', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings']);
   assert.deepEqual(modeNavKeys('control'), ['tasks', 'approvals', 'subscriptions', 'objects', 'permissions', 'mods', 'executors', 'evolution', 'blocked', 'mode-confirm', 'settings']);
   assert.deepEqual(modeNavKeys('pilot'), ['pilot']);
   assert.deepEqual(modeNavKeys('bogus' as never), []);

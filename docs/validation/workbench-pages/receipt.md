@@ -10,7 +10,7 @@
 
 | 模式 | 已打开页面 |
 | --- | --- |
-| 工作台 | home、overview、plugins、skills、connectors、models、memory、knowledge、workflows、mods、filedir、relations、onboard、mode-confirm、asset-revisions、context-usage、workflow-designs、evaluations、settings |
+| 工作台 | home、overview、plugins、skills、connectors、models、memory、knowledge、workflows、mods、notes-locations、relations、onboard、mode-confirm、asset-revisions、context-usage、workflow-designs、evaluations、settings |
 | 控制台 | tasks、approvals、subscriptions、objects、permissions、mods、executors、evolution、blocked、mode-confirm、settings |
 | 领航员 | pilot |
 

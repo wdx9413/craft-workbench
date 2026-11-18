@@ -6,7 +6,7 @@ const MODES = {
   pilot: ['pilot'],
   control: ['tasks', 'approvals', 'subscriptions', 'objects', 'permissions', 'mods', 'executors', 'evolution', 'blocked', 'settings'],
   workshop: ['home', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'overview', 'mods',
-    'filedir', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
+    'notes-locations', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
 };
 const shots = new URL('./shots/', import.meta.url);
 await mkdir(shots, { recursive: true });

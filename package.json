@@ -1,6 +1,6 @@
 {
   "name": "craft-workbench",
-  "version": "0.18.2",
+  "version": "0.18.4",
   "private": true,
   "type": "module",
   "description": "Optional Craft web presentation and Tauri desktop shell",
@@ -36,7 +36,7 @@
     "test:coverage:frozen-verification": "node --experimental-strip-types --test --test-isolation=none --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include=web/work-review-verification-ui.js tests/work-review-verification-ui.test.ts"
   },
   "dependencies": {
-    "craft": "0.20.7"
+    "craft": "0.20.10"
   },
   "devDependencies": {
     "playwright-core": "^1.65.0"

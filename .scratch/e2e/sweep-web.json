@@ -274,8 +274,8 @@
   },
   {
     "mode": "workshop",
-    "target": "filedir",
-    "page": "filedir",
+    "target": "notes-locations",
+    "page": "notes-locations",
     "length": 133,
     "head": "设备与位置 记录“哪台设备上的哪个目录”和它的含义；按语义找位置、按位置找含义。同一路径在不同设备上是两个位置，只有填了仓库地址才会跨设备召回。 本地 云端",
     "callout": "",

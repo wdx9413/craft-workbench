@@ -5,7 +5,7 @@ const MODES = {
   pilot: ['pilot'],
   control: ['tasks', 'approvals', 'subscriptions', 'objects', 'permissions', 'mods', 'executors', 'evolution', 'blocked', 'settings'],
   workshop: ['home', 'plugins', 'skills', 'connectors', 'models', 'memory', 'knowledge', 'workflows', 'overview', 'mods',
-    'filedir', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
+    'notes-locations', 'relations', 'onboard', 'mode-confirm', 'asset-revisions', 'context-usage', 'workflow-designs', 'evaluations', 'settings'],
 };
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9333');

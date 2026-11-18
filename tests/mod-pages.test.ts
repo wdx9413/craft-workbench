@@ -120,7 +120,7 @@ test('place registry page records a device-scoped location and promotes it', asy
     presentation, notify: () => {}, fail: (e: Error) => { throw e; }, ask: () => null, operator: () => 'op',
     paint: () => {}, go: () => {}, openInlineOn: () => {},
   });
-  const view = await pages.filedir();
+  const view = await pages['notes-locations']();
   assert.ok(view.html.includes('C:\\projects\\billing'));
   assert.ok(view.html.includes('billing service'));
   assert.ok(view.html.includes('build-01'), 'the device id is visible on every row');
@@ -130,10 +130,10 @@ test('place registry page records a device-scoped location and promotes it', asy
   const nodes = { querySelector: () => null, querySelectorAll: (s: string) => (s === '[data-desc-promote]' ? [promote] : []) };
   view.mounts[0](nodes as never);
   (promote as { onclick?: () => void }).onclick!(); await flush();
-  assert.ok(calls.some((c) => c.path === '/api/workbench/file-dir-desc/promote' && (c.body as { id: string }).id === 'd1'));
+  assert.ok(calls.some((c) => c.path === '/api/workbench/notes/locations/promote' && (c.body as { id: string }).id === 'd1'));
 });
 
-test('file-dir-desc page offers attributed relocation and withdrawal, and marks withdrawn rows', async () => {
+test('Craft Notes locations offers attributed relocation and withdrawal, and marks withdrawn rows', async () => {
   const calls: Array<{ path: string; body?: unknown }> = [];
   const data = { items: [
     { id: 'd1', path: 'C:\\projects\\billing', description: 'billing service', hostKind: 'local', useCount: 3, status: 'promoted' },
@@ -145,7 +145,7 @@ test('file-dir-desc page offers attributed relocation and withdrawal, and marks 
     presentation, notify: () => {}, fail: (e: Error) => { throw e; }, ask: () => promptAnswer, operator: () => 'user:alex',
     paint: () => {}, go: () => {}, openInlineOn: () => {},
   });
-  const view = await pages.filedir();
+  const view = await pages['notes-locations']();
   assert.match(view.html, /撤销后不会因再次使用自动恢复/u);
   assert.match(view.html, /project moved/u);
   const relocate = button({ 'data-desc-relocate': 'd1', getAttribute: (k: string) => (k === 'data-desc-relocate' ? 'd1' : null) } as never);
@@ -154,7 +154,7 @@ test('file-dir-desc page offers attributed relocation and withdrawal, and marks 
     s === '[data-desc-relocate]' ? [relocate] : s === '[data-desc-revoke]' ? [revoke] : [] };
   view.mounts[0](nodes as never);
   (relocate as { onclick?: () => void }).onclick!(); await flush();
-  assert.deepEqual(calls.find((c) => c.path === '/api/workbench/file-dir-desc/relocate')?.body,
+  assert.deepEqual(calls.find((c) => c.path === '/api/workbench/notes/locations/relocate')?.body,
     { id: 'd1', path: 'D:\\work\\billing' });
   // A withdrawal without a reason is refused locally, never sent half-formed.
   promptAnswer = '   ';
@@ -163,7 +163,7 @@ test('file-dir-desc page offers attributed relocation and withdrawal, and marks 
   assert.equal(calls.length, before);
   promptAnswer = 'project moved';
   (revoke as { onclick?: () => void }).onclick!(); await flush();
-  assert.deepEqual(calls.find((c) => c.path === '/api/workbench/file-dir-desc/revoke')?.body,
+  assert.deepEqual(calls.find((c) => c.path === '/api/workbench/notes/locations/revoke')?.body,
     { id: 'd1', revoked_by: 'user:alex', reason: 'project moved' });
 });
 
