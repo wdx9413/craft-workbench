@@ -119,7 +119,9 @@ export function modeForLocation(page, requestedMode, currentMode) {
   if (isMode(requestedMode)) return requestedMode;
   // Context pages can be opened from another mode without replacing its shell.
   if (isMode(currentMode)) return currentMode;
-  return modeForPage(page) || (isMode(currentMode) ? currentMode : 'pilot');
+  // Without a current mode the page owner decides; an unknown page lands on
+  // Pilot, the default projection.
+  return modeForPage(page) || 'pilot';
 }
 
 /** Restore the correct projection after browser back/forward or an old deep link. */

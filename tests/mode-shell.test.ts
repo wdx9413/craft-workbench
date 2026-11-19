@@ -243,8 +243,26 @@ test('readModeOnly reads the pinned desktop mode and rejects unknown values', ()
   assert.equal(readModeOnly({ CRAFT_MODE_ONLY: 'bogus' }), '');
   assert.equal(readModeOnly({}), '');
   assert.equal(readModeOnly(null), '');
-  assert.equal(readModeOnly({ get CRAFT_MODE_ONLY() { throw new Error('blocked'); } }), '');
-});
+    assert.equal(readModeOnly({ get CRAFT_MODE_ONLY() { throw new Error('blocked'); } }), '');
+  });
+
+test('readModeOnly falls back to the global window when no host is given', () => {
+    const previous = (globalThis as any).window;
+    try {
+      (globalThis as any).window = { CRAFT_MODE_ONLY: 'control' };
+      assert.equal(readModeOnly(), 'control');
+      (globalThis as any).window = undefined;
+      assert.equal(readModeOnly(), '');
+    } finally {
+      if (previous === undefined) delete (globalThis as any).window;
+      else (globalThis as any).window = previous;
+    }
+  });
+
+test('a deep link without a current mode falls back to the page owner, then to Pilot', () => {
+    assert.equal(modeForLocation('plugins', '', 'bogus'), 'workshop');
+    assert.equal(modeForLocation('unknown-page', '', 'bogus'), 'pilot');
+  });
 
 test('readModeOnly tolerates a missing host instead of crashing', async () => {
   const source = await readFile(new URL('../web/mode-shell.js', import.meta.url), 'utf8');

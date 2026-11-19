@@ -20,6 +20,18 @@ test('model pricing saves explicitly and is cleared when its destination changes
   assert.equal(sent.length, 2);
 });
 
+test('a pricing block without a version or with a broken cached price is refused', async () => {
+  const presets = [{ key: 'custom', label: 'Custom', models: ['m'], baseUrl: 'https://one.test', protocol: 'openai-compatible', env: 'PRICE_KEY' }];
+  const base = { id: 'custom', name: 'Model', model: 'm', baseUrl: 'https://one.test', protocol: 'openai-compatible', apiKeyEnv: 'PRICE_KEY' };
+  const setup = createModelSetup(presets, async () => ({}));
+  setup.open({ editing: { ...base, pricing: { version: '  ', input_usd_per_million: 1, output_usd_per_million: 2 } } });
+  await assert.rejects(setup.save(), /版本/u);
+  setup.open({ editing: { ...base, pricing: { version: 'v1', input_usd_per_million: 1, output_usd_per_million: 2, cached_input_usd_per_million: -1 } } });
+  await assert.rejects(setup.save(), /缓存单价/u);
+  setup.open({ editing: { ...base, pricing: { version: 'v1', input_usd_per_million: 1, output_usd_per_million: 2, cached_input_usd_per_million: Number.NaN } } });
+  await assert.rejects(setup.save(), /缓存单价/u);
+});
+
 test('credential guidance follows the chosen environment name and platform without exposing a key', () => {
   assert.deepEqual(environmentGuidance('CUSTOM_KEY', 'Win32'), { command: "$env:CUSTOM_KEY = '你的Key'", message: '请从同一终端启动 Craft；命令可能保存在终端历史中。' });
   assert.deepEqual(environmentGuidance('CUSTOM_KEY', 'MacIntel'), { command: "launchctl setenv CUSTOM_KEY '你的Key'", message: '退出并重新打开 Craft 后，请检查配置是否生效；命令可能保存在终端历史中。' });

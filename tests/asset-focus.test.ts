@@ -64,3 +64,33 @@ test('applying a trend focus opens the trend control of that asset', () => {
   assert.deepEqual(opened, ['trend', 'audit']);
 });
 
+test('a focus with an empty asset id is refused', () => {
+  assert.equal(parseAssetFocus('memory:#trend'), null);
+  assert.equal(parseAssetFocus('memory:#audit'), null);
+});
+
+test('a control without a closest helper is still focused', () => {
+  const opened: string[] = [];
+  const button = { click: () => opened.push('clicked') };
+  assert.equal(applyAssetFocus({ querySelector: () => button }, 'memory:m1'), 'focused');
+  assert.deepEqual(opened, ['clicked']);
+});
+
+test('a control that only has an onclick is still focused', () => {
+  const opened: string[] = [];
+  const button = { onclick: () => opened.push('invoked') };
+  assert.equal(applyAssetFocus({ querySelector: () => button }, 'memory:m1'), 'focused');
+  assert.deepEqual(opened, ['invoked']);
+});
+
+test('a row without scrollIntoView is left alone', () => {
+  const opened: string[] = [];
+  const button = { click: () => opened.push('clicked'), closest: () => ({}) };
+  assert.equal(applyAssetFocus({ querySelector: () => button }, 'memory:m1'), 'focused');
+  assert.deepEqual(opened, ['clicked']);
+});
+
+test('a missing asset notifies the caller only when a notify function was given', () => {
+  assert.equal(applyAssetFocus({ querySelector: () => null }, 'memory:absent'), 'missing');
+});
+

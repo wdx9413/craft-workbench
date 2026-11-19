@@ -9,6 +9,11 @@ const presentation = {
 };
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
+function restoreGlobalDocument(descriptor: PropertyDescriptor | undefined) {
+  if (descriptor) Object.defineProperty(globalThis, 'document', descriptor);
+  else delete (globalThis as { document?: unknown }).document;
+}
+
 test('Craft Notes page guides required device notes and reviews only explicit candidates', async () => {
   const calls: Array<{ path: string; body?: unknown }> = [], notifications: string[] = [], refreshes: string[] = [];
   const pages = createModPages({
@@ -58,13 +63,12 @@ test('device onboarding requires an id and a note, then submits the note as user
   const values: Record<string, string> = { 'notes-device-id': 'laptop-2', 'notes-device-name': '工作站', 'notes-device-note': '本地代理和模型节点' };
   view.mounts[0]({ querySelector: (selector: string) => selector === '#notes-device-create' ? button : null,
     querySelectorAll: () => [], } as never);
-  const oldGetById = globalThis.document;
+  const oldDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'document');
   Object.defineProperty(globalThis, 'document', { configurable: true, value: { getElementById: (id: string) => ({ value: values[id] ?? '' }) } });
   try {
     button.onclick!(); await flush();
   } finally {
-    if (oldGetById === undefined) delete (globalThis as { document?: unknown }).document;
-    else Object.defineProperty(globalThis, 'document', { configurable: true, value: oldGetById });
+    restoreGlobalDocument(oldDescriptor);
   }
   const request = calls.find(item => item.path === '/api/workbench/notes/devices' && item.body);
   assert.deepEqual(request?.body, { id: 'laptop-2', name: '工作站', note: '本地代理和模型节点' });
@@ -89,12 +93,12 @@ test('important directory and file notes are submitted only as pinned review can
   const file = { onclick: null as null | (() => void), disabled: false };
   const values: Record<string, string> = { 'notes-target-device': 'laptop', 'notes-directory-path': '/work/core',
     'notes-directory-text': '核心后端架构文档', 'notes-file-path': '/work/config/prod.yaml', 'notes-file-text': '生产配置只读' };
-  const originalDocument = globalThis.document;
+  const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'document');
   view.mounts[0]({ querySelector: (selector: string) => selector === '#notes-directory-create' ? directory : selector === '#notes-file-create' ? file : null,
     querySelectorAll: () => [], } as never);
   Object.defineProperty(globalThis, 'document', { configurable: true, value: { getElementById: (id: string) => ({ value: values[id] ?? '' }) } });
   try { directory.onclick!(); file.onclick!(); await flush(); }
-  finally { Object.defineProperty(globalThis, 'document', { configurable: true, value: originalDocument }); }
+  finally { restoreGlobalDocument(originalDescriptor); }
   assert.deepEqual(calls.filter(item => item.path.endsWith('observe-directory'))[0]?.body,
     { path: '/work/core', note: '核心后端架构文档', device_id: 'laptop', pin: true });
   assert.deepEqual(calls.filter(item => item.path.endsWith('observe-file'))[0]?.body,

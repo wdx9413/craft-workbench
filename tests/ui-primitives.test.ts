@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { esc, icon, label, fromLabel, statusPill, effectPill, settled, head, emptyState, countChip, asideBlock, asideRows, failureText, STATUS_LABELS, changeSetStatusLabel } from '../web/ui.js';
+import { esc, icon, label, fromLabel, statusPill, effectPill, settled, head, emptyState, countChip, asideBlock, asideRows, failureText, STATUS_LABELS, changeSetStatusLabel, $, val, checked, lines, shortTime, pill, receiptName, statTile, lead } from '../web/ui.js';
 
 test('failure text translates known kernel sentences and keeps unknown ones verbatim', () => {
   assert.match(failureText('task has no workspace; choose a project before dispatch'), /工作目录/u);
@@ -64,4 +64,72 @@ test('card helpers produce stable markup', () => {
   assert.equal(countChip(3), '<span class="count-chip">3</span>');
   assert.match(asideBlock('状态', '2', '<p>x</p>'), /<span>状态<\/span>/u);
   assert.match(asideRows([['键', '值']]), /<span class="v">值<\/span>/u);
+});
+
+test('shortTime formats parseable timestamps and keeps unparseable ones verbatim', () => {
+  assert.equal(shortTime(''), '');
+  assert.equal(shortTime(null), '');
+  assert.equal(shortTime('not-a-date'), 'not-a-date');
+  assert.match(shortTime('2026-03-04T05:06:07Z'), /^\d{2}\/\d{2} \d{2}:\d{2}$/u);
+});
+
+test('pill and statTile add tones only when supplied and render an em dash for empties', () => {
+  assert.equal(pill('完成'), '<span class="pill">完成</span>');
+  assert.equal(pill('完成', 'ok'), '<span class="pill ok">完成</span>');
+  assert.match(statTile('累计', 0, 'db'), /<b>0<\/b>/u);
+  assert.match(statTile('累计', '', 'db'), /<b>—<\/b>/u);
+  assert.match(statTile('累计', null, 'db', 'warn'), /stat-ic warn/u);
+  assert.match(lead('db'), /<span class="row-lead">/u);
+  assert.match(lead('db', 'danger'), /<span class="row-lead danger">/u);
+});
+
+test('receipt names split stage and action, collapsing a repeated word', () => {
+  assert.equal(receiptName('review:git_diff'), '复查 · 代码差异');
+  assert.equal(receiptName('review:review'), '复查');
+  assert.equal(receiptName('plain'), 'plain');
+  assert.equal(receiptName(''), '—');
+});
+
+test('form readers return trimmed values, checked flags and non-empty lines', () => {
+  const nodes: Record<string, Record<string, unknown>> = {
+    name: { value: '  alice  ' },
+    blank: { value: '' },
+    unset: {},
+    agree: { checked: true },
+    list: { value: ' a \r\n\r\n b \n ' },
+    off: { checked: false },
+  };
+  (globalThis as any).document = { getElementById: (id: string) => nodes[id] ?? null };
+  try {
+    assert.equal($('name'), nodes.name);
+    assert.equal(val('name'), 'alice');
+    assert.equal(val('blank'), '');
+    assert.equal(val('unset'), '');
+    assert.equal(val('missing'), '');
+    assert.equal(checked('agree'), true);
+    assert.equal(checked('off'), false);
+    assert.equal(checked('missing'), false);
+    assert.deepEqual(lines('list'), ['a', 'b']);
+    assert.deepEqual(lines('blank'), []);
+    assert.deepEqual(lines('unset'), []);
+    assert.deepEqual(lines('missing'), []);
+  } finally {
+    delete (globalThis as any).document;
+  }
+});
+
+test('unknown and empty enum values fall back without inventing a tone', () => {
+  assert.equal(label(STATUS_LABELS, ''), '—');
+  assert.equal(fromLabel(STATUS_LABELS, undefined, 'raw'), 'raw');
+  assert.equal(fromLabel(STATUS_LABELS, null, 'raw'), 'raw');
+  assert.match(statusPill(''), /<span class="pill">—<\/span>/u);
+  assert.match(statusPill('weird'), /<span class="pill">weird<\/span>/u);
+  assert.match(effectPill(''), /未声明/u);
+  assert.match(effectPill('unknown-effect'), /unknown-effect/u);
+});
+
+test('empty states and aside blocks omit optional parts', () => {
+  assert.match(emptyState('空'), /<b>空<\/b><\/div>/u);
+  assert.match(emptyState('空', ''), /class="ic empty-ic"/u);
+  assert.match(asideBlock('标题', '', '<p>x</p>'), /<\/div><p>x<\/p>/u);
 });

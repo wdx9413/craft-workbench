@@ -56,3 +56,33 @@ test('cancelToolInstall posts to the cancel route', async () => {
   assert.equal(result.state, 'cancelled');
   assert.deepEqual(calls, ['/api/workbench/tool-install/install_1/cancel']);
 });
+
+test('every stage maps to its own percentage and unknown stages stay at zero', () => {
+  assert.equal(describeJob(job({ stage: 'install' })).percent, 55);
+  assert.equal(describeJob(job({ stage: 'writeback' })).percent, 95);
+  assert.equal(describeJob(job({ stage: 'preflight' })).percent, 15);
+  assert.equal(describeJob(job({ stage: 'unknown-stage' })).percent, 0);
+  assert.equal(describeJob(job({ stage: 'unknown-stage' })).label, '安装中');
+  assert.equal(describeJob(job({ stage: 'done' })).label, '完成');
+});
+
+test('a poll that loses the job state fails instead of polling forever', async () => {
+  await assert.rejects(() => waitForJob({ api: async () => ({}), job: job(), interval: 1, timeout: 1000 }),
+    /安装任务状态丢失/);
+});
+
+test('install output without a tail keeps the stage alone', () => {
+  assert.equal(installOutputText(job({ output: '', error: null })), '[安装中]');
+});
+
+test('startToolInstall polls with the default update callback and interval', async () => {
+  let polls = 0;
+  const api = async (_path: string, init: any = {}) => {
+    if (init.method === 'POST') return { job: job() };
+    polls += 1;
+    return { job: job({ state: polls >= 1 ? 'succeeded' : 'running', stage: 'done' }) };
+  };
+  const result = await startToolInstall({ api, provider: 'codex' });
+  assert.equal(result.state, 'succeeded');
+  assert.equal(polls, 1);
+});

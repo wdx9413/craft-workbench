@@ -33,7 +33,8 @@ export function bindRecallAudit(root, { api, attribute, member }) {
  * claim. Same formula the recall path ranks with.
  */
 function escapeText(value) {
-  return String(value ?? '').replace(/[&<>"]/gu, function (character) {
+  // The summary text is always a joined string, so the value is never nullish.
+  return String(value).replace(/[&<>"]/gu, function (character) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character];
   });
 }
@@ -49,7 +50,8 @@ function compressCurve(values, max) {
   for (var index = 0; index < values.length; index += 1) {
     if (!collapsed.length || Math.abs(collapsed[collapsed.length - 1] - values[index]) > 1e-9) collapsed.push(values[index]);
   }
-  if (!collapsed.length && values.length) collapsed.push(values[values.length - 1]);
+  // The first value always lands in `collapsed`, so the curve is empty exactly
+  // when there is no value at all.
   if (collapsed.length <= max) return collapsed;
   var sampled = [];
   for (var slot = 0; slot < max; slot += 1) {
@@ -63,7 +65,9 @@ function sparkline(values) {
   var width = 240, height = 48, pad = 4;
   var min = Math.min.apply(null, values.concat([1]));
   var max = Math.max.apply(null, values.concat([1]));
-  if (max - min < 1e-9) { min -= 0.1; max += 0.1; }
+  // compressCurve() only keeps values that differ by more than 1e-9, so any two
+  // surviving points are further apart than the epsilon: the range is never
+  // degenerate and needs no extra padding.
   var coordinates = values.map(function (value, index) {
     var x = pad + (width - pad * 2) * (index / (values.length - 1));
     var y = height - pad - (height - pad * 2) * ((value - min) / (max - min));
@@ -111,7 +115,7 @@ export function bindWeightTrend(root, { api, attribute, member }) {
           // Per-day rollup only when the history actually spans more than a day,
           // so a single-day curve is not padded with redundant lines.
           var daily = (result.daily || []).length > 1
-            ? (result.daily || []).slice(-7).map(function (day) {
+            ? result.daily.slice(-7).map(function (day) {
               return '按天 ' + String(day.day) + ' · 有用 ' + Number(day.positive || 0) +
                 ' / 纠错 ' + Number(day.negative || 0) + ' → ' + Number(day.end_weight ?? 1).toFixed(2);
             })
