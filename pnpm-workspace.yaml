@@ -10,4 +10,20 @@ allowBuilds:
 
 # Runtime packages are consumed by exact npm versions; no source checkout or
 # local link is recorded in the lockfile.
-minimumReleaseAgeExclude: [ '@craft/capability-codebase@0.20.5', '@craft/capability-datasec@0.1.7', '@craft/capability-experience@0.20.5', '@craft/capability-experience@0.20.7', '@craft/capability-experience@0.20.8', '@craft/craft-notes@0.20.7', '@craft/capability-knowledge@0.20.5', '@craft/capability-memory@0.20.5', craft-common-base@0.20.4, craft-common-log@0.20.4, craft-common-ontology@0.20.5, craft-common-store-local@0.20.4, craft-eval@0.7.3, craft@0.20.8, craft@0.20.9, craft@0.20.10 ]
+# Preserve the existing compatible transitive version in the pinned runtime graph.
+overrides:
+  object-inspect: 1.13.4
+minimumReleaseAgeExclude:
+  - 'craft-common-store-local@0.21.0'
+  - 'craft-common-base@0.20.5'
+  - 'craft-common-log@0.20.13'
+  - '@craft/capability-memory@0.20.9'
+  - '@craft/capability-knowledge@0.20.9'
+  - '@craft/capability-experience@0.21.0'
+  - '@craft/capability-context@0.21.0'
+  - '@craft/capability-codebase@0.20.7'
+  - '@craft/craft-notes@0.20.8'
+  - '@craft/capability-datasec@0.2.0'
+  - 'craft-eval@0.7.4'
+  - 'craft@0.21.2'
+  - 'craft-common-ontology@0.20.7'
